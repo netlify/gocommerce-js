@@ -63,7 +63,7 @@ gocommerce.order({
   console.log("Order confirmed!")
 });
 
-gocommerce.clearCard(); // Will be called automatically after a successful order
+gocommerce.clearCart(); // Will be called automatically after a successful order
 ```
 
 You can use `gocommerce` together with [authlify](https://github.com/netlify/authlify) to let users log in and claim view order history.

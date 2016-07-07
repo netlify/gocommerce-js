@@ -79,7 +79,10 @@ export default class Gocommerce {
           billing_address, billing_address_id,
           line_items
         })
-      }));
+      })).then((order) => {
+        this.clearCart();
+        return order;
+      });
     } else {
       return Promise.reject(
         "Invalid orderDetails - must have an email and either a shipping_address or shipping_address_id"
