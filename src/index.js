@@ -8,7 +8,7 @@ export default class Gocommerce {
     if (!options.APIUrl) {
       throw("You must specify an APIUrl of your Gocommerce instance");
     }
-    if (!options.APIUrl.match(HTTPRegexp)) {
+    if (options.APIUrl.match(HTTPRegexp)) {
       console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR GOCOMMERCE EVER!\GOCOMMERCE REQUIRES HTTPS to work securely.')
     }
 
