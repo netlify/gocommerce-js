@@ -15,15 +15,13 @@ const gocommerce = new Gocommerce({
 });
 
 gocommerce.addToCart({
-	title: "Netlify Mug",
-	sku: "netlify-mug-01",
-	description: "A mug with a netlify sticker!",
-	price: 4900, // Price should always be in cents
+	path: '/producs/book-1/',
 	quantity: 2,
 	meta: {
-		photo: "/images/mugs/netlig-01.png" // You can add anything in metadata
+    // You can add anything in metadata and use it in your checkout ui
+		photo: "/images/mugs/netlig-01.png"
 	}
-});
+}).then((lineItem) => console.log(lineItem));
 
 console.log(gocommerce.getCart());
 /*
