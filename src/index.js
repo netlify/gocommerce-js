@@ -142,7 +142,8 @@ export default class Gocommerce {
     const {
       email,
       shipping_address, shipping_address_id,
-      billing_address, billing_address_id
+      billing_address, billing_address_id,
+      data
     } = orderDetails;
 
     if (email && (shipping_address || shipping_address_id)) {
@@ -158,11 +159,13 @@ export default class Gocommerce {
           email,
           shipping_address, shipping_address_id,
           billing_address, billing_address_id,
+          data,
           line_items
         })
       })).then((order) => {
+        const cart = this.getCart();
         this.clearCart();
-        return order;
+        return {cart, order};
       });
     } else {
       return Promise.reject(
