@@ -3,6 +3,41 @@ import API from "./api";
 const HTTPRegexp = /^http:\/\//;
 const cartKey = "gocommerce.shopping-cart";
 
+function checkRole(user, role) {
+  return user && user.roles && user.roles.filter((r) => r == role)[0];
+}
+
+function getPrice(prices, currency, user) {
+  return prices
+    .filter((price) => currency == (price.currency || "USD").toUpperCase())
+    .filter((price) => price.role ? checkRole(user) : true)
+    .sort((a, b) => a.amount - b.amount)[0];
+}
+
+function applyTax(price, quantity, percentage) {
+  const cents = parseInt(parseFloat(price.amount) * quantity * 100);
+  const tax = cents * (percentage / 100);
+  return {
+    amount: (tax / 100).toFixed(2),
+    cents: tax,
+    currency: price.currency
+  };
+}
+
+function getTax(item, taxes, country) {
+  if (item.vat) {
+    return applyTax(item.price, item.quantity, parseInt(item.vat, 10));
+  }
+  if (taxes && country && item.type) {
+    for (let i = 0, len = taxes.length; i < len; i ++) {
+      if (taxes[i].product_types.includes(item.type) && taxes[i].countries.includes(country)) {
+        return applyTax(item.price, item.quantity, taxes[i].percentage);
+      }
+    }
+  }
+  return {amount: "0.00", cents: 0, currency: item.price.currency};
+}
+
 export default class Gocommerce {
   constructor(options) {
     if (!options.APIUrl) {
@@ -13,6 +48,10 @@ export default class Gocommerce {
     }
 
     this.api = new API(options.APIUrl);
+    this.currency = options.currency || "USD";
+    this.billing_country = options.country;
+    this.settings_path = "/gocommerce/settings.json";
+    this.settings_refresh_period = options.settingsRefreshPeriod || (10 * 60 * 1000);
     this.loadCart();
   }
 
@@ -21,30 +60,72 @@ export default class Gocommerce {
   }
 
   addToCart(item) {
-    const {title, sku, description, price, quantity, path, meta} = item;
-    if (title && sku && description && price && quantity && path) {
-      if (this.cart[sku]) {
-        this.cart[sku].quantity += quantity;
-      } else {
-        this.cart[sku] = {title, sku, path, description, price, quantity, meta};
-      }
-      this.persistCart();
-      return this.getCart();
+    const {path, quantity, meta} = item;
+    if (quantity && path) {
+      return fetch(path).then((response) => {
+        if (!response.ok) { return Promise.reject(`Failed to fetch ${path}`); }
+
+        return response.text().then((html) => {
+          const doc = document.implementation.createHTMLDocument("product");
+          doc.documentElement.innerHTML = html;
+          const product = JSON.parse(doc.getElementById("gocommerce-product").innerHTML);
+          const {sku, title, prices, description, type, vat} = product;
+          if (sku && title && prices) {
+            if (this.line_items[sku]) {
+              this.line_items[sku].quantity += quantity;
+            } else {
+              this.line_items[sku] = Object.assign(product, {path, meta, quantity});
+            }
+            return this.loadSettings().then(() => {
+              this.persistCart();
+              return this.getCart();
+            });
+          } else {
+            return Promise.reject("Failed to read sku, title and price from product path");
+          }
+        });
+      });
     } else {
-      throw("Invalid item - must have title, path, sku, description, price and quantity");
+      return Promise.reject("Invalid item - must have path and quantity");
     }
   }
 
   getCart() {
-    return Object.assign({}, this.cart);
+    const cart = {
+      subtotal: {amount: "", cents: 0, currency: this.currency},
+      taxes: {amount: "", cents: 0, currency: this.currency},
+      total: {amount: "", cents: 0, currency: this.currency},
+      items: {}
+    };
+    for (const key in this.line_items) {
+      const item = cart.items[key] = Object.assign({}, this.line_items[key], {
+        price: getPrice(this.line_items[key].prices, this.currency, this.user)
+      });
+      item.tax = getTax(item, this.settings && this.settings.taxes, this.billing_country);
+      cart.subtotal.cents += parseFloat(item.price.amount * item.quantity * 100);
+      cart.taxes.cents += parseFloat(item.tax.amount * 100);
+    }
+    cart.total.cents = cart.subtotal.cents + cart.taxes.cents;
+    cart.subtotal.amount = `${(cart.subtotal.cents / 100).toFixed(2)}`;
+    cart.taxes.amount = `${(cart.taxes.cents / 100).toFixed(2)}`;
+    cart.total.amount = `${(cart.total.cents / 100).toFixed(2)}`;
+    return cart;
+  }
+
+  setCurrency(currency) {
+    this.currency = currency;
+  }
+
+  setCountry(country) {
+    this.billing_country = country;
   }
 
   updateCart(sku, quantity) {
-    if (this.cart[sku]) {
+    if (this.line_items[sku]) {
       if (quantity > 0) {
-        this.cart[sku].quantity = quantity;
+        this.line_items[sku].quantity = quantity;
       } else {
-        delete this.cart[sku];
+        delete this.line_items[sku];
       }
       this.persistCart();
     } else {
@@ -53,7 +134,7 @@ export default class Gocommerce {
   }
 
   clearCart() {
-    this.cart = {};
+    this.line_items = {};
     this.persistCart();
   }
 
@@ -61,13 +142,14 @@ export default class Gocommerce {
     const {
       email,
       shipping_address, shipping_address_id,
-      billing_address, billing_address_id
+      billing_address, billing_address_id,
+      data
     } = orderDetails;
 
     if (email && (shipping_address || shipping_address_id)) {
       const line_items = [];
-      for (const id in this.cart) {
-        line_items.push(this.cart[id]);
+      for (const id in this.line_items) {
+        line_items.push(this.line_items[id]);
       }
 
       return this.authHeaders().then((headers) => this.api.request("/orders", {
@@ -77,11 +159,13 @@ export default class Gocommerce {
           email,
           shipping_address, shipping_address_id,
           billing_address, billing_address_id,
+          data,
           line_items
         })
       })).then((order) => {
+        const cart = this.getCart();
         this.clearCart();
-        return order;
+        return {cart, order};
       });
     } else {
       return Promise.reject(
@@ -91,16 +175,22 @@ export default class Gocommerce {
   }
 
   payment(paymentDetails) {
-    const {order_id, stripe_token} = paymentDetails;
-    if (order_id && stripe_token) {
+    const {order_id, amount, stripe_token} = paymentDetails;
+    if (order_id && stripe_token && amount) {
+      const cart = this.getCart();
       return this.authHeaders().then((headers) => this.api.request(`/orders/${order_id}/payments`, {
         method: "POST",
         headers: headers,
-        body: JSON.stringify({stripe_token})
+        body: JSON.stringify({
+          amount,
+          order_id,
+          stripe_token,
+          currency: this.currency
+        })
       }));
     } else {
       return Promise.reject(
-        "Invalid paymentDetails - must have an order_id and a stripe_token"
+        "Invalid paymentDetails - must have an order_id, an amount and a stripe_token"
       );
     }
   }
@@ -127,14 +217,40 @@ export default class Gocommerce {
   loadCart() {
     const json = localStorage.getItem(cartKey);
     if (json) {
-      this.cart = JSON.parse(json);
+      const cart = JSON.parse(json);
+      this.settings = cart.settings;
+      this.line_items = cart.line_items || {};
     } else {
-      this.cart = {};
+      this.settings = null;
+      this.line_items = {};
     }
   }
 
+  loadSettings() {
+    if (this.settingsAreFresh()) { return Promise.resolve(); }
+
+    return fetch(this.settings_path).then((response) => {
+      if (!response.ok) { return; }
+
+      return response.json().then((json) => {
+        this.settings = Object.assign(json, {ts: new Date().getTime()});
+      });
+    });
+  }
+
+  settingsAreFresh() {
+    if (this.settings_path == null) { return true; }
+
+    if (this.settings) {
+      const diff = new Date().getTime() - this.settings.ts;
+      return diff < this.settings_refresh_period;
+    }
+
+    return false;
+  }
+
   persistCart() {
-    const json = JSON.stringify(this.cart);
+    const json = JSON.stringify({line_items: this.line_items, settings: this.settings});
     localStorage.setItem(cartKey, json);
   }
 }

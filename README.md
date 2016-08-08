@@ -15,28 +15,32 @@ const gocommerce = new Gocommerce({
 });
 
 gocommerce.addToCart({
-	title: "Netlify Mug",
-	sku: "netlify-mug-01",
-	description: "A mug with a netlify sticker!",
-	price: 4900, // Price should always be in cents
+	path: '/producs/book-1/',
 	quantity: 2,
 	meta: {
-		photo: "/images/mugs/netlig-01.png" // You can add anything in metadata
+    // You can add anything in metadata and use it in your checkout ui
+		photo: "/images/mugs/netlig-01.png"
 	}
-});
+}).then((lineItem) => console.log(lineItem));
 
 console.log(gocommerce.getCart());
 /*
-  [{
+{
+  items: [{
   	title: "Netlify Mug",
   	sku: "netlify-mug-01",
   	description: "A mug with a netlify sticker!",
-  	price: 4900, // Price should always be in cents
+  	price: {amount: "49.00", "currency": "USD", cents: 4900},
+    tax: {amount: "0.00", currency: "USD", cents: 0},
   	quantity: 2,
   	metadata: {
   		photo: "/images/mugs/netlig-01.png" // You can add anything in metadata
   	}
-  }]
+  }],
+  subtotal: {amount: "98.00", "currency": "USD", cents: 9800},
+  taxes: {amount: "0.00", "currency": "USD", cents: 0},
+  total: {amount: "98.00", "currency": "USD", cents: 9800}
+}
 */
 
 gocommerce.updateCard("netlify-mug-01", 3); // Set to 0 to remove
@@ -54,16 +58,26 @@ gocommerce.order({
     zip: "94107"
   }
   /* You can optionally specify billing_address as well */
-}).then((order) => {
+}).then(({cart, order}) => {
   return gocommerce.payment({
+    // Get a token from Stripes button or a custom integration
+    "stripe_token": TOKEN_FROM_STRIPE_CC_FORM,
+    // The gocommerce API will verify that the amount and order ID match
+    "amount": cart.total.cents,
     "order_id": order.id,
-    "stripe_token": TOKEN_FROM_STRIPE_CC_FORM
   })
 }).then((transaction) => {
   console.log("Order confirmed!")
 });
 
 gocommerce.clearCart(); // Will be called automatically after a successful order
+```
+
+You can change country (for VAT calculations) or currency at any time:
+
+```
+gocommerce.setCountry("USA");
+gocommerce.setCurrency("USD");
 ```
 
 You can use `gocommerce` together with [authlify](https://github.com/netlify/authlify) to let users log in and claim view order history.
