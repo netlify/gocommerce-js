@@ -2,6 +2,7 @@ import API from "./api";
 
 const HTTPRegexp = /^http:\/\//;
 const cartKey = "gocommerce.shopping-cart";
+const vatnumbers = {};
 
 function checkRole(user, role) {
   return user && user.roles && user.roles.filter((r) => r == role)[0];
@@ -107,17 +108,28 @@ export default class Gocommerce {
     }
     cart.total.cents = cart.subtotal.cents + cart.taxes.cents;
     cart.subtotal.amount = `${(cart.subtotal.cents / 100).toFixed(2)}`;
-    cart.taxes.amount = `${(cart.taxes.cents / 100).toFixed(2)}`;
+    if (this.vatnumber_valid) {
+      cart.taxes = {amount: "0.00", cents: 0, currency: this.currency};
+    } else {
+      cart.taxes.amount = `${(cart.taxes.cents / 100).toFixed(2)}`;
+    }
     cart.total.amount = `${(cart.total.cents / 100).toFixed(2)}`;
     return cart;
   }
 
   setCurrency(currency) {
     this.currency = currency;
+    return Promise.resolve(this.getCart());
   }
 
   setCountry(country) {
     this.billing_country = country;
+    return Promise.resolve(this.getCart());
+  }
+
+  setVatnumber(vatnumber) {
+    this.vatnumber = vatnumber;
+    return this.verifyVatnumber(vatnumber).then(() => this.getCart());
   }
 
   updateCart(sku, quantity) {
@@ -159,6 +171,8 @@ export default class Gocommerce {
           email,
           shipping_address, shipping_address_id,
           billing_address, billing_address_id,
+          vatnumber: this.vatnumber_valid ? this.vatnumber : null,
+          currency: this.currency,
           data,
           line_items
         })
@@ -247,6 +261,24 @@ export default class Gocommerce {
     }
 
     return false;
+  }
+
+  verifyVatnumber(vatnumber) {
+    this.vatnumber_valid = false;
+    if (!vatnumber) {
+      this.vatnumber_valid = false;
+      return Promise.resolve(false);
+    }
+    if (vatnumbers[vatnumber]) {
+      this.vatnumber_valid = vatnumbers[vatnumber].valid;
+      return Promise.resolve(false);
+    }
+
+    return this.api.request(`/vatnumbers/${vatnumber}`).then((response) => {
+      vatnumbers[vatnumber] = response;
+      this.vatnumber_valid = response.valid;
+      return response.valid;
+    });
   }
 
   persistCart() {
