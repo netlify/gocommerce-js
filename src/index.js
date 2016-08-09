@@ -19,7 +19,7 @@ function applyTax(price, quantity, percentage) {
   const cents = parseInt(parseFloat(price.amount) * quantity * 100);
   const tax = cents * (percentage / 100);
   return {
-    amount: (tax / 100).toFixed(2),
+    amount: centsToAmount(tax),
     cents: tax,
     currency: price.currency
   };
@@ -37,6 +37,10 @@ function getTax(item, taxes, country) {
     }
   }
   return {amount: "0.00", cents: 0, currency: item.price.currency};
+}
+
+function centsToAmount(cents) {
+  return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
 export default class Gocommerce {
@@ -106,14 +110,14 @@ export default class Gocommerce {
       cart.subtotal.cents += parseFloat(item.price.amount * item.quantity * 100);
       cart.taxes.cents += parseFloat(item.tax.amount * 100);
     }
-    cart.total.cents = cart.subtotal.cents + cart.taxes.cents;
-    cart.subtotal.amount = `${(cart.subtotal.cents / 100).toFixed(2)}`;
+    cart.subtotal.amount = centsToAmount(cart.subtotal.cents);
     if (this.vatnumber_valid) {
       cart.taxes = {amount: "0.00", cents: 0, currency: this.currency};
     } else {
-      cart.taxes.amount = `${(cart.taxes.cents / 100).toFixed(2)}`;
+      cart.taxes.amount = centsToAmount(cart.taxes.cents);
     }
-    cart.total.amount = `${(cart.total.cents / 100).toFixed(2)}`;
+    cart.total.cents = cart.subtotal.cents + cart.taxes.cents;
+    cart.total.amount = centsToAmount(cart.total.cents);
     return cart;
   }
 
