@@ -1,7 +1,7 @@
 import API from "./api";
 
 const HTTPRegexp = /^http:\/\//;
-const cartKey = "gocommerce.shopping-cart";
+const cartKey = "netlify.commerce.shopping-cart";
 const vatnumbers = {};
 
 function checkRole(user, role) {
@@ -43,19 +43,19 @@ function centsToAmount(cents) {
   return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
-export default class Gocommerce {
+export default class NetlifyCommerce {
   constructor(options) {
     if (!options.APIUrl) {
-      throw("You must specify an APIUrl of your Gocommerce instance");
+      throw("You must specify an APIUrl of your Netlify Commerce instance");
     }
     if (options.APIUrl.match(HTTPRegexp)) {
-      console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR GOCOMMERCE EVER!\GOCOMMERCE REQUIRES HTTPS to work securely.')
+      console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR NETLIFY COMMERCE EVER!\NETLIFY COMMERCE REQUIRES HTTPS to work securely.')
     }
 
     this.api = new API(options.APIUrl);
     this.currency = options.currency || "USD";
     this.billing_country = options.country;
-    this.settings_path = "/gocommerce/settings.json";
+    this.settings_path = "/netlify-commerce/settings.json";
     this.settings_refresh_period = options.settingsRefreshPeriod || (10 * 60 * 1000);
     this.loadCart();
   }
@@ -73,7 +73,7 @@ export default class Gocommerce {
         return response.text().then((html) => {
           const doc = document.implementation.createHTMLDocument("product");
           doc.documentElement.innerHTML = html;
-          const product = JSON.parse(doc.getElementById("gocommerce-product").innerHTML);
+          const product = JSON.parse(doc.getElementById("netlify-commerce-product").innerHTML);
           const {sku, title, prices, description, type, vat} = product;
           if (sku && title && prices) {
             if (this.line_items[sku]) {
@@ -292,5 +292,5 @@ export default class Gocommerce {
 }
 
 if (typeof window !== "undefined") {
-  window.Gocommerce = Gocommerce
+  window.NetlifyCommerce = NetlifyCommerce
 }
