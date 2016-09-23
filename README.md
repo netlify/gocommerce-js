@@ -1,6 +1,6 @@
-# Gocommerce JS Client
+# Netlify Commerce JS
 
-This is a JS library for the [Gocommerce](https://github.com/netlify/gocommerce) API.
+This is a JS client library for [Netlify Commerce](https://github.com/netlify/netlify-commerce) API.
 
 It lets you signup and authenticate users and is a building block for constructing
 the UI for signups, password recovery, login and logout.
@@ -8,13 +8,13 @@ the UI for signups, password recovery, login and logout.
 ## Usage
 
 ```js
-import Gocommerce from `gocommerce-js`;
+import NetlifyCommerce from `netlify-commerce-js`;
 
-const gocommerce = new Gocommerce({
-  APIUrl: "https://gocommerce.netlify.com"
+const commerce = new NetlifyCommerce({
+  APIUrl: "https://commerce.netlify.com"
 });
 
-gocommerce.addToCart({
+commerce.addToCart({
 	path: '/producs/book-1/',
 	quantity: 2,
 	meta: {
@@ -23,7 +23,7 @@ gocommerce.addToCart({
 	}
 }).then((lineItem) => console.log(lineItem));
 
-console.log(gocommerce.getCart());
+console.log(commerce.getCart());
 /*
 {
   items: [{
@@ -43,9 +43,9 @@ console.log(gocommerce.getCart());
 }
 */
 
-gocommerce.updateCard("netlify-mug-01", 3); // Set to 0 to remove
+commerce.updateCard("netlify-mug-01", 3); // Set to 0 to remove
 
-gocommerce.order({
+commerce.order({
   email: "matt@netlify.com",
   shipping_address: {
     first_name: "Matt",
@@ -59,10 +59,10 @@ gocommerce.order({
   }
   /* You can optionally specify billing_address as well */
 }).then(({cart, order}) => {
-  return gocommerce.payment({
+  return commerce.payment({
     // Get a token from Stripes button or a custom integration
     "stripe_token": TOKEN_FROM_STRIPE_CC_FORM,
-    // The gocommerce API will verify that the amount and order ID match
+    // The commerce API will verify that the amount and order ID match
     "amount": cart.total.cents,
     "order_id": order.id,
   })
@@ -70,29 +70,29 @@ gocommerce.order({
   console.log("Order confirmed!")
 });
 
-gocommerce.clearCart(); // Will be called automatically after a successful order
+commerce.clearCart(); // Will be called automatically after a successful order
 ```
 
 You can change country (for VAT calculations) or currency at any time:
 
 ```
-gocommerce.setCountry("USA");
-gocommerce.setCurrency("USD");
+commerce.setCountry("USA");
+commerce.setCurrency("USD");
 ```
 
-You can use `gocommerce` together with [authlify](https://github.com/netlify/authlify) to let users log in and claim view order history.
+You can use Netlify Commerce JS together with [authlify](https://github.com/netlify/authlify) to let users log in and claim view order history.
 
 ```js
 authlify.login(email, password).then((user) => {
-  gocommerce.setUser(user);
+  commerce.setUser(user);
 
-  gocommerce.order({
+  commerce.order({
     email: user.email,
     shipping_address_id: "some-previously-generated-address"
     /* Normal order details */
   });
 
-  gocommerce.orderHistory().then((orders) => {
+  commerce.orderHistory().then((orders) => {
     console.log(orders);
   });
 });
