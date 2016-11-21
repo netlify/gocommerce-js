@@ -1,4 +1,4 @@
-import API from "./api";
+import API from "micro-api-client";
 
 const HTTPRegexp = /^http:\/\//;
 const cartKey = "netlify.commerce.shopping-cart";
