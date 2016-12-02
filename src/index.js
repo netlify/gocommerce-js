@@ -65,7 +65,7 @@ export default class NetlifyCommerce {
     return this.authHeaders().then((headers) => this.api.request("/claim", {
       headers,
       method: "POST"
-    });
+    }));
   }
 
   addToCart(item) {
