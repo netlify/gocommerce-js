@@ -62,10 +62,6 @@ export default class NetlifyCommerce {
 
   setUser(user) {
     this.user = user;
-    return this.authHeaders().then((headers) => this.api.request("/claim", {
-      headers,
-      method: "POST"
-    }));
   }
 
   addToCart(item) {
@@ -221,6 +217,16 @@ export default class NetlifyCommerce {
 
   paypalPaymentInfo(paymentID) {
     return this.api.request(`/paypal/${paymentID}`);
+  }
+
+  claimOrders() {
+    if (this.user) {
+      return this.authHeaders().then((headers) => this.api.request("/claim", {
+        headers,
+        method: "POST"
+      }));
+    }
+    return Promise.resolve(null);
   }
 
   orderHistory() {
