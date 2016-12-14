@@ -26,6 +26,18 @@ function applyTax(price, quantity, percentage) {
 }
 
 function getTax(item, taxes, country) {
+  if (item.price.items) {
+    return item.price.items
+      .map((i) => getTax(
+        Object.assign({}, item, {type: i.type, vat: i.vat, price: {amount: i.amount, currency: item.price.currency}}),
+        taxes,
+        country
+      ))
+      .reduce((result, price) => {
+        const cents = result.cents + price.cents;
+        return {amount: centsToAmount(cents), cents, currency: price.currency}
+      }, {amount: "0.00", cents: 0, currency: item.price.currency});
+  }
   if (item.vat) {
     return applyTax(item.price, item.quantity, parseInt(item.vat, 10));
   }
@@ -73,8 +85,21 @@ export default class NetlifyCommerce {
         return response.text().then((html) => {
           const doc = document.implementation.createHTMLDocument("product");
           doc.documentElement.innerHTML = html;
-          const product = JSON.parse(doc.getElementById("netlify-commerce-product").innerHTML);
-          const {sku, title, prices, description, type, vat} = product;
+          const products = Array.from(doc.getElementsByClassName("netlify-commerce-product"))
+            .map((el) => JSON.parse(el.innerHTML));
+
+          if (products.length === 0) {
+            return Promise.reject("No .netlify-commerce-product found in product path");
+          }
+
+          const sku = products.length === 1 ? (item.sku || products[0].sku) : item.sku;
+
+          const product = products.find((prod) => prod.sku === sku);
+          if (!product) {
+            return Promise.reject(`No .netlify-commerce-product matching sku=${sku} found in product path`);
+          }
+
+          const {title, prices, description, type, vat} = product;
           if (sku && title && prices) {
             if (this.line_items[sku]) {
               this.line_items[sku].quantity += quantity;
@@ -86,7 +111,7 @@ export default class NetlifyCommerce {
               return this.getCart();
             });
           } else {
-            return Promise.reject("Failed to read sku, title and price from product path");
+            return Promise.reject("Failed to read sku, title and price from product path: %o", {sku, title, prices});
           }
         });
       });
@@ -182,7 +207,6 @@ export default class NetlifyCommerce {
         })
       })).then((order) => {
         const cart = this.getCart();
-        this.clearCart();
         return {cart, order};
       });
     } else {
