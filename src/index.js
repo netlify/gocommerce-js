@@ -265,6 +265,18 @@ export default class NetlifyCommerce {
     }
   }
 
+  orderDetails(orderID) {
+    if (this.user) {
+      return this.authHeaders().then((headers) => this.api.request(`/orders/${orderID}`, {
+        headers
+      }));
+    } else {
+      return Promise.reject(
+        "You must be authenticated to fetch order history"
+      );
+    }
+  }
+
   authHeaders() {
     if (this.user) {
       return this.user.jwt().then((token) => ({Authorization: `Bearer ${token}`}));
