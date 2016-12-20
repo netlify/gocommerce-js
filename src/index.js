@@ -253,35 +253,67 @@ export default class NetlifyCommerce {
     return Promise.resolve(null);
   }
 
-  orderHistory() {
-    if (this.user) {
-      return this.authHeaders().then((headers) => this.api.request("/orders", {
-        headers
-      }));
-    } else {
-      return Promise.reject(
-        "You must be authenticated to fetch order history"
-      );
+  updateOrder(orderId, attributes) {
+    return this.authHeaders(true).then((headers) => this.api.request(`/orders/${orderId}`, {
+      headers,
+      method: "PUT",
+      body: JSON.stringify(attributes)
+    }));
+  }
+
+  orderHistory(params) {
+    let path = "/orders";
+    if (params && params.user_id) {
+      path = `/users/${params.user_id}/orders`;
+      delete params.user_id;
     }
+    if (params) {
+      const query = [];
+      for (const key in params) {
+        query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+      }
+      path += `?${query.join("&")}`
+    }
+    return this.authHeaders(true).then((headers) => this.api.request(path, {
+      headers
+    }));
   }
 
   orderDetails(orderID) {
-    if (this.user) {
-      return this.authHeaders().then((headers) => this.api.request(`/orders/${orderID}`, {
+      return this.authHeaders(true).then((headers) => this.api.request(`/orders/${orderID}`, {
         headers
       }));
-    } else {
-      return Promise.reject(
-        "You must be authenticated to fetch order history"
-      );
-    }
   }
 
-  authHeaders() {
+  userDetails(userId) {
+    userId = userId || (this.user && this.user.id);
+
+    return this.authHeaders(true).then((headers) => this.api.request(`/users/${userId}`, {
+      headers
+    }));
+  }
+
+  users(params) {
+    let path = "/users/";
+    if (params) {
+      const query = [];
+      for (const key in params) {
+        query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+      }
+      path += `?${query.join("&")}`
+    }
+    return this.authHeaders(true).then((headers) => this.api.request(path, {
+      headers
+    }));
+  }
+
+  authHeaders(required) {
     if (this.user) {
       return this.user.jwt().then((token) => ({Authorization: `Bearer ${token}`}));
     }
-    return Promise.resolve({});
+    return required ? Promise.reject(
+      "The API action requires authentication"
+    ) : Promise.resolve({});
   }
 
   loadCart() {
