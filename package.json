@@ -1,6 +1,6 @@
 {
   "name": "netlify-commerce-js",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Netlify Commerce API client for JavaScript",
   "main": "lib/index.js",
   "files": ["lib/", "README.md"],
@@ -20,6 +20,6 @@
     "uglify-js": "^2.6.2"
   },
   "dependencies": {
-    "micro-api-client": "^1.1.1"
+    "micro-api-client": "^2.0.0"
   }
 }

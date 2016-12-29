@@ -276,7 +276,7 @@ export default class NetlifyCommerce {
     }
     return this.authHeaders(true).then((headers) => this.api.request(path, {
       headers
-    }));
+    })).then(({items, pagination}) => ({orders: items, pagination}));
   }
 
   orderDetails(orderID) {
@@ -304,7 +304,7 @@ export default class NetlifyCommerce {
     }
     return this.authHeaders(true).then((headers) => this.api.request(path, {
       headers
-    }));
+    })).then(({items, pagination}) => ({users: items, pagination}));
   }
 
   authHeaders(required) {
