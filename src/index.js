@@ -55,6 +55,17 @@ function centsToAmount(cents) {
   return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
+function pathWithQuery(path, params) {
+  if (params) {
+    const query = [];
+    for (const key in params) {
+      query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+    }
+    return `${path}?${query.join("&")}`;
+  }
+  return path;
+}
+
 export default class NetlifyCommerce {
   constructor(options) {
     if (!options.APIUrl) {
@@ -267,13 +278,7 @@ export default class NetlifyCommerce {
       path = `/users/${params.user_id}/orders`;
       delete params.user_id;
     }
-    if (params) {
-      const query = [];
-      for (const key in params) {
-        query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
-      }
-      path += `?${query.join("&")}`
-    }
+    path = pathWithQuery(path, params);
     return this.authHeaders(true).then((headers) => this.api.request(path, {
       headers
     })).then(({items, pagination}) => ({orders: items, pagination}));
@@ -294,17 +299,17 @@ export default class NetlifyCommerce {
   }
 
   users(params) {
-    let path = "/users/";
-    if (params) {
-      const query = [];
-      for (const key in params) {
-        query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
-      }
-      path += `?${query.join("&")}`
-    }
+    const path = pathWithQuery("/users", params);
     return this.authHeaders(true).then((headers) => this.api.request(path, {
       headers
     })).then(({items, pagination}) => ({users: items, pagination}));
+  }
+
+  report(name, params) {
+    const path = pathWithQuery(`/reports/${name}`, params);
+    return this.authHeaders(true).then((headers) => this.api.request(path, {
+      headers
+    }));
   }
 
   authHeaders(required) {
