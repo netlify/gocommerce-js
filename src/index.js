@@ -298,6 +298,25 @@ export default class NetlifyCommerce {
     }));
   }
 
+  downloads(params) {
+    let path = "/downloads";
+    if (params && params.order_id) {
+      path = `/orders/${params.order_id}/downloads`;
+      delete params.order_id;
+    }
+    path = pathWithQuery(path, params);
+    return this.authHeaders().then((headers) => this.api.request(path, {
+      headers
+    })).then(({items, pagination}) => ({downloads: items, pagination}));
+  }
+
+  downloadURL(downloadId) {
+    const path = `/downloads/${downloadId}`;
+    return this.authHeaders().then((headers) => this.api.request(path, {
+      headers
+    })).then((response) => response.url);
+  }
+
   users(params) {
     const path = pathWithQuery("/users", params);
     return this.authHeaders(true).then((headers) => this.api.request(path, {
