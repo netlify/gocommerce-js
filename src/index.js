@@ -254,6 +254,15 @@ export default class NetlifyCommerce {
     return this.api.request(`/paypal/${paymentID}`);
   }
 
+  resendConfirmation(orderID, email) {
+    const path = `/orders/${orderID}/receipt`;
+    return this.authHeaders().then((headers) => this.api.request(path, {
+      headers,
+      method: "POST",
+      body: JSON.stringify({email})
+    }));
+  }
+
   claimOrders() {
     if (this.user) {
       return this.authHeaders().then((headers) => this.api.request("/claim", {
