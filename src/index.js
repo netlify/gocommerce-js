@@ -74,6 +74,7 @@ export default class NetlifyCommerce {
     if (options.APIUrl.match(HTTPRegexp)) {
       console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR NETLIFY COMMERCE EVER!\NETLIFY COMMERCE REQUIRES HTTPS to work securely.')
     }
+    this.cartKey = options.cartKey || cartKey;
 
     this.api = new API(options.APIUrl);
     this.currency = options.currency || "USD";
@@ -350,7 +351,7 @@ export default class NetlifyCommerce {
   }
 
   loadCart() {
-    const json = localStorage.getItem(cartKey);
+    const json = localStorage.getItem(this.cartKey);
     if (json) {
       const cart = JSON.parse(json);
       this.settings = cart.settings;
@@ -404,7 +405,7 @@ export default class NetlifyCommerce {
 
   persistCart() {
     const json = JSON.stringify({line_items: this.line_items, settings: this.settings});
-    localStorage.setItem(cartKey, json);
+    localStorage.setItem(this.cartKey, json);
   }
 }
 
