@@ -115,6 +115,9 @@ export default class NetlifyCommerce {
           if (sku && title && prices) {
             if (this.line_items[sku]) {
               this.line_items[sku].quantity += quantity;
+              if (meta) {
+                this.line_items[sku].meta = Object.assign({}, this.line_items[sku].meta, meta);
+              }
             } else {
               this.line_items[sku] = Object.assign(product, {path, meta, quantity});
             }
