@@ -121,6 +121,11 @@ export default class NetlifyCommerce {
             } else {
               this.line_items[sku] = Object.assign(product, {path, meta, quantity});
             }
+            if (item.addons && product.addons) {
+              this.line_items[sku].addons = product.addons.filter((addon) => item.addons.indexOf(addon.sku) !== -1);
+            } else {
+              delete this.line_items[sku].addons;
+            }
             return this.loadSettings().then(() => {
               this.persistCart();
               return this.getCart();
@@ -146,8 +151,24 @@ export default class NetlifyCommerce {
       const item = cart.items[key] = Object.assign({}, this.line_items[key], {
         price: getPrice(this.line_items[key].prices, this.currency, this.user)
       });
+      if (this.line_items[key].addons) {
+        item.addons = [];
+        this.line_items[key].addons.forEach((addon) => {
+          item.addons.push(Object.assign({}, addon, {
+            price: getPrice(addon.prices, this.currency, this.user)
+          }));
+        });
+      }
       item.tax = getTax(item, this.settings && this.settings.taxes, this.billing_country);
-      cart.subtotal.cents += parseFloat(item.price.amount * item.quantity * 100);
+      cart.subtotal.cents += parseFloat(item.price.amount) * item.quantity * 100;
+      if (item.addons) {
+        item.addonPrice = {
+          currency: this.currency,
+          cents: item.addons.reduce((sum, addon) => sum + parseFloat(addon.price.amount) * 100, 0)
+        };
+        item.addonPrice.amount = (item.addonPrice.cents / 100).toFixed(2);
+        cart.subtotal.cents += item.addonPrice.cents * item.quantity;
+      }
       cart.taxes.cents += parseFloat(item.tax.amount * 100);
     }
     cart.subtotal.amount = centsToAmount(cart.subtotal.cents);
