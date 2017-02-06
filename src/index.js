@@ -15,6 +15,20 @@ function getPrice(prices, currency, user) {
     .sort((a, b) => a.amount - b.amount)[0];
 }
 
+function addPrices(...prices) {
+  const result = {
+    cents: 0,
+  };
+  prices.forEach((price) => {
+    if (price) {
+      result.cents += price.cents;
+      result.currency = price.currency;
+    }
+  });
+  result.amount = centsToAmount(result.cents);
+  return result;
+}
+
 function applyTax(price, quantity, percentage) {
   const cents = parseInt(parseFloat(price.amount) * quantity * 100);
   const tax = cents * (percentage / 100);
@@ -39,12 +53,12 @@ function getTax(item, taxes, country) {
       }, {amount: "0.00", cents: 0, currency: item.price.currency});
   }
   if (item.vat) {
-    return applyTax(item.price, item.quantity, parseInt(item.vat, 10));
+    return applyTax(addPrices(item.price, item.addonPrice), item.quantity, parseInt(item.vat, 10));
   }
   if (taxes && country && item.type) {
     for (let i = 0, len = taxes.length; i < len; i ++) {
       if (taxes[i].product_types.includes(item.type) && taxes[i].countries.includes(country)) {
-        return applyTax(item.price, item.quantity, taxes[i].percentage);
+        return applyTax(addPrices(item.price, item.addonPrice), item.quantity, taxes[i].percentage);
       }
     }
   }
@@ -123,6 +137,7 @@ export default class NetlifyCommerce {
             }
             if (item.addons && product.addons) {
               this.line_items[sku].addons = product.addons.filter((addon) => item.addons.indexOf(addon.sku) !== -1);
+              this.line_items[sku].addonPrice = addPrices(...this.line_items[sku].addons.map((addon) => addon.price));
             } else {
               delete this.line_items[sku].addons;
             }
