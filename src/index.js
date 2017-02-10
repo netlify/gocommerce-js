@@ -21,6 +21,9 @@ function addPrices(...prices) {
   };
   prices.forEach((price) => {
     if (price) {
+      if (!price.hasOwnProperty("cents")) {
+        price.cents = parseInt(parseFloat(price.amount) * 100);
+      }
       result.cents += price.cents;
       result.currency = price.currency;
     }
