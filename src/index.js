@@ -1,4 +1,5 @@
 import API from "micro-api-client";
+import {calculatePrices} from "./calculator";
 
 const HTTPRegexp = /^http:\/\//;
 const cartKey = "netlify.commerce.shopping-cart";
@@ -12,7 +13,15 @@ function getPrice(prices, currency, user) {
   return prices
     .filter((price) => currency == (price.currency || "USD").toUpperCase())
     .filter((price) => price.role ? checkRole(user) : true)
-    .sort((a, b) => a.amount - b.amount)[0];
+    .map((price) => {
+      price.cents = price.cents || parseInt(parseFloat(price.amount) * 100);
+      return price;
+    })
+    .sort((a, b) => a.cents - b.cents)[0];
+}
+
+function priceObject(cents, currency) {
+  return {cents, amount: centsToAmount(cents), currency};
 }
 
 function addPrices(...prices) {
@@ -30,42 +39,6 @@ function addPrices(...prices) {
   });
   result.amount = centsToAmount(result.cents);
   return result;
-}
-
-function applyTax(price, quantity, percentage) {
-  const cents = parseInt(parseFloat(price.amount) * quantity * 100);
-  const tax = cents * (percentage / 100);
-  return {
-    amount: centsToAmount(tax),
-    cents: tax,
-    currency: price.currency
-  };
-}
-
-function getTax(item, taxes, country) {
-  if (item.price.items) {
-    return item.price.items
-      .map((i) => getTax(
-        Object.assign({}, item, {type: i.type, vat: i.vat, price: {amount: i.amount, currency: item.price.currency}}),
-        taxes,
-        country
-      ))
-      .reduce((result, price) => {
-        const cents = result.cents + price.cents;
-        return {amount: centsToAmount(cents), cents, currency: price.currency}
-      }, {amount: "0.00", cents: 0, currency: item.price.currency});
-  }
-  if (item.vat) {
-    return applyTax(addPrices(item.price, item.addonPrice), item.quantity, parseInt(item.vat, 10));
-  }
-  if (taxes && country && item.type) {
-    for (let i = 0, len = taxes.length; i < len; i ++) {
-      if (taxes[i].product_types.includes(item.type) && taxes[i].countries.includes(country)) {
-        return applyTax(addPrices(item.price, item.addonPrice), item.quantity, taxes[i].percentage);
-      }
-    }
-  }
-  return {amount: "0.00", cents: 0, currency: item.price.currency};
 }
 
 function centsToAmount(cents) {
@@ -86,7 +59,7 @@ function pathWithQuery(path, params) {
 export default class NetlifyCommerce {
   constructor(options) {
     if (!options.APIUrl) {
-      throw("You must specify an APIUrl of your Netlify Commerce instance");
+      throw('You must specify an APIUrl of your Netlify Commerce instance');
     }
     if (options.APIUrl.match(HTTPRegexp)) {
       console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR NETLIFY COMMERCE EVER!\NETLIFY COMMERCE REQUIRES HTTPS to work securely.')
@@ -159,16 +132,16 @@ export default class NetlifyCommerce {
   }
 
   getCart() {
-    const cart = {
-      subtotal: {amount: "", cents: 0, currency: this.currency},
-      taxes: {amount: "", cents: 0, currency: this.currency},
-      total: {amount: "", cents: 0, currency: this.currency},
-      items: {}
-    };
+    const cart = {items: {}};
+    const items = [];
     for (const key in this.line_items) {
       const item = cart.items[key] = Object.assign({}, this.line_items[key], {
         price: getPrice(this.line_items[key].prices, this.currency, this.user)
       });
+      (item.price.items || []).forEach((priceItem) => {
+        priceItem.cents = (parseFloat(priceItem.amount) * 100).toFixed(0);
+      });
+      items.push(item);
       if (this.line_items[key].addons) {
         item.addons = [];
         this.line_items[key].addons.forEach((addon) => {
@@ -177,26 +150,22 @@ export default class NetlifyCommerce {
           }));
         });
       }
-      item.tax = getTax(item, this.settings && this.settings.taxes, this.billing_country);
-      cart.subtotal.cents += parseFloat(item.price.amount) * item.quantity * 100;
       if (item.addons) {
-        item.addonPrice = {
-          currency: this.currency,
-          cents: item.addons.reduce((sum, addon) => sum + parseFloat(addon.price.amount) * 100, 0)
-        };
-        item.addonPrice.amount = (item.addonPrice.cents / 100).toFixed(2);
-        cart.subtotal.cents += item.addonPrice.cents * item.quantity;
+        item.addonPrice = priceObject(
+          item.addons.reduce((sum, addon) => sum + parseFloat(addon.price.amount) * 100, 0),
+          this.currency
+        );
       }
-      cart.taxes.cents += parseFloat(item.tax.amount * 100);
     }
-    cart.subtotal.amount = centsToAmount(cart.subtotal.cents);
-    if (this.vatnumber_valid) {
-      cart.taxes = {amount: "0.00", cents: 0, currency: this.currency};
-    } else {
-      cart.taxes.amount = centsToAmount(cart.taxes.cents);
-    }
-    cart.total.cents = cart.subtotal.cents + cart.taxes.cents;
-    cart.total.amount = centsToAmount(cart.total.cents);
+
+    const price = calculatePrices(this.settings, this.billing_country, this.currency, this.coupon, items);
+    console.log('price %o',price);
+
+    cart.subtotal = priceObject(price.subtotal, this.currency);
+    cart.discount = priceObject(price.discount, this.currency);
+    cart.taxes = priceObject(price.taxes, this.currency);
+    cart.total = priceObject(price.total, this.currency);
+
     return cart;
   }
 
@@ -213,6 +182,13 @@ export default class NetlifyCommerce {
   setVatnumber(vatnumber) {
     this.vatnumber = vatnumber;
     return this.verifyVatnumber(vatnumber).then(() => this.getCart());
+  }
+
+  setCoupon(code) {
+    return this.verifyCoupon(code).then((coupon) => {
+      this.coupon = coupon;
+      return coupon;
+    });
   }
 
   updateCart(sku, quantity) {
@@ -256,6 +232,7 @@ export default class NetlifyCommerce {
           billing_address, billing_address_id,
           vatnumber: this.vatnumber_valid ? this.vatnumber : null,
           currency: this.currency,
+          coupon: this.coupon ? this.coupon.code : null,
           data,
           line_items
         })
@@ -443,6 +420,12 @@ export default class NetlifyCommerce {
       this.vatnumber_valid = response.valid;
       return response.valid;
     });
+  }
+
+  verifyCoupon(code) {
+    return this.authHeaders(false).then((headers) => this.api.request(`/coupons/${code}`, {
+      headers
+    }));
   }
 
   persistCart() {
