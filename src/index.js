@@ -185,6 +185,10 @@ export default class NetlifyCommerce {
   }
 
   setCoupon(code) {
+    if (code == null) {
+      this.coupon = null;
+      return Promise.resolve(null);
+    }
     return this.verifyCoupon(code).then((coupon) => {
       this.coupon = coupon;
       return coupon;
