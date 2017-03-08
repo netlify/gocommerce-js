@@ -1,7 +1,7 @@
 {
-  "name": "netlify-commerce-js",
+  "name": "gocommerce-js",
   "version": "3.6.1",
-  "description": "Netlify Commerce API client for JavaScript",
+  "description": "GoCommerce API client for JavaScript",
   "main": "lib/index.js",
   "files": ["lib/", "README.md"],
   "scripts": {
