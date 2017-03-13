@@ -1,6 +1,6 @@
-# Netlify Commerce JS
+# GoCommerce JS
 
-This is a JS client library for [Netlify Commerce](https://github.com/netlify/netlify-commerce) API.
+This is a JS client library for [GoCommerce](https://github.com/netlify/gocommerce) API.
 
 It lets you signup and authenticate users and is a building block for constructing
 the UI for signups, password recovery, login and logout.
@@ -8,9 +8,9 @@ the UI for signups, password recovery, login and logout.
 ## Usage
 
 ```js
-import NetlifyCommerce from `netlify-commerce-js`;
+import GoCommerce from `gocommerce-js`;
 
-const commerce = new NetlifyCommerce({
+const commerce = new GoCommerce({
   APIUrl: "https://commerce.netlify.com"
 });
 
@@ -80,10 +80,10 @@ commerce.setCountry("USA");
 commerce.setCurrency("USD");
 ```
 
-You can use Netlify Commerce JS together with [authlify](https://github.com/netlify/authlify) to let users log in and claim view order history.
+You can use GoCommerce JS together with [GoTrue](https://github.com/netlify/gotrue) to let users log in and claim view order history.
 
 ```js
-authlify.login(email, password).then((user) => {
+goTrue.login(email, password).then((user) => {
   commerce.setUser(user);
 
   commerce.order({

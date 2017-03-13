@@ -2,7 +2,7 @@ import API from "micro-api-client";
 import {calculatePrices} from "./calculator";
 
 const HTTPRegexp = /^http:\/\//;
-const cartKey = "netlify.commerce.shopping-cart";
+const cartKey = "gocommerce.shopping-cart";
 const vatnumbers = {};
 
 function checkRole(user, role) {
@@ -56,20 +56,20 @@ function pathWithQuery(path, params) {
   return path;
 }
 
-export default class NetlifyCommerce {
+export default class GoCommerce {
   constructor(options) {
     if (!options.APIUrl) {
-      throw('You must specify an APIUrl of your Netlify Commerce instance');
+      throw('You must specify an APIUrl of your GoCommerce instance');
     }
     if (options.APIUrl.match(HTTPRegexp)) {
-      console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR NETLIFY COMMERCE EVER!\NETLIFY COMMERCE REQUIRES HTTPS to work securely.')
+      console.log('Warning:\n\nDO NOT USE HTTP IN PRODUCTION FOR GOCOMMERCE EVER!\GOCOMMERCE REQUIRES HTTPS to work securely.')
     }
     this.cartKey = options.cartKey || cartKey;
 
     this.api = new API(options.APIUrl);
     this.currency = options.currency || "USD";
     this.billing_country = options.country;
-    this.settings_path = "/netlify-commerce/settings.json";
+    this.settings_path = "/gocommerce/settings.json";
     this.settings_refresh_period = options.settingsRefreshPeriod || (10 * 60 * 1000);
     this.loadCart();
   }
@@ -87,18 +87,18 @@ export default class NetlifyCommerce {
         return response.text().then((html) => {
           const doc = document.implementation.createHTMLDocument("product");
           doc.documentElement.innerHTML = html;
-          const products = Array.from(doc.getElementsByClassName("netlify-commerce-product"))
+          const products = Array.from(doc.getElementsByClassName("gocommerce-product"))
             .map((el) => JSON.parse(el.innerHTML));
 
           if (products.length === 0) {
-            return Promise.reject("No .netlify-commerce-product found in product path");
+            return Promise.reject("No .gocommerce-product found in product path");
           }
 
           const sku = products.length === 1 ? (item.sku || products[0].sku) : item.sku;
 
           const product = products.find((prod) => prod.sku === sku);
           if (!product) {
-            return Promise.reject(`No .netlify-commerce-product matching sku=${sku} found in product path`);
+            return Promise.reject(`No .gocommerce-product matching sku=${sku} found in product path`);
           }
 
           const {title, prices, description, type, vat} = product;
@@ -439,5 +439,5 @@ export default class NetlifyCommerce {
 }
 
 if (typeof window !== "undefined") {
-  window.NetlifyCommerce = NetlifyCommerce
+  window.GoCommerce = GoCommerce
 }
