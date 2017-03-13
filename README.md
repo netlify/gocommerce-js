@@ -83,7 +83,7 @@ commerce.setCurrency("USD");
 You can use GoCommerce JS together with [GoTrue](https://github.com/netlify/gotrue) to let users log in and claim view order history.
 
 ```js
-authlify.login(email, password).then((user) => {
+goTrue.login(email, password).then((user) => {
   commerce.setUser(user);
 
   commerce.order({
