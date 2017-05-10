@@ -158,7 +158,7 @@ export default class GoCommerce {
       }
     }
 
-    const price = calculatePrices(this.settings, this.billing_country, this.currency, this.coupon, items);
+    const price = calculatePrices(this.settings, null, this.billing_country, this.currency, this.coupon, items);
     console.log('price %o',price);
 
     cart.subtotal = priceObject(price.subtotal, this.currency);

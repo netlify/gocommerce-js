@@ -1,8 +1,7 @@
 {
   "presets": [ "es2015"],
   "plugins": [
-    "transform-class-properties",
-    "transform-object-assign",
+    "syntax-object-rest-spread",
     "transform-object-rest-spread"
   ]
 }

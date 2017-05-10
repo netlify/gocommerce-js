@@ -29,7 +29,7 @@ function couponValidFor(coupon, item) {
   return true;
 }
 
-export function calculatePrices(settings, country, currency, coupon, items) {
+export function calculatePrices(settings, claims, country, currency, coupon, items) {
   const price = new Price();
   const includeTaxes = settings && settings.prices_include_taxes;
   price.items = [];

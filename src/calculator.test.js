@@ -1,12 +1,12 @@
 import {calculatePrices} from './calculator';
 
 test('no items', () => {
-  const price = calculatePrices(null, "USA", "USD", null, []);
+  const price = calculatePrices(null, null, "USA", "USD", null, []);
   expect(price.total).toBe(0);
 });
 
 test('no taxes', () => {
-  const price = calculatePrices(null, "USA", "USD", null, [{price: {cents: 100}, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", null, [{price: {cents: 100}, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(0);
@@ -14,7 +14,7 @@ test('no taxes', () => {
 });
 
 test('fixed vat', () => {
-  const price = calculatePrices(null, "USA", "USD", null, [{price: {cents: 100}, vat: 9, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", null, [{price: {cents: 100}, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(9);
   expect(price.discount).toBe(0);
@@ -22,7 +22,7 @@ test('fixed vat', () => {
 })
 
 test('fixed vat when prices include taxes', () => {
-  const price = calculatePrices({prices_include_taxes: true}, "USA", "USD", null, [{price: {cents: 100}, vat: 9, type: "test"}]);
+  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", null, [{price: {cents: 100}, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(92);
   expect(price.taxes).toBe(8);
   expect(price.discount).toBe(0);
@@ -31,7 +31,7 @@ test('fixed vat when prices include taxes', () => {
 
 test('country based VAT', () => {
   const settings = {taxes: [{percentage: 21, product_types: ["test"], countries: ["USA"]}]};
-  const price = calculatePrices(settings, "USA", "USD", null, [{price: {cents: 100}, type: "test"}]);
+  const price = calculatePrices(settings, null, "USA", "USD", null, [{price: {cents: 100}, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(21);
   expect(price.discount).toBe(0);
@@ -40,7 +40,7 @@ test('country based VAT', () => {
 
 test('country based VAT when prices include taxes', () => {
   const settings = {prices_include_taxes: true, taxes: [{percentage: 21, product_types: ["test"], countries: ["USA"]}]};
-  const price = calculatePrices(settings, "USA", "USD", null, [{price: {cents: 100}, type: "test"}]);
+  const price = calculatePrices(settings, null, "USA", "USD", null, [{price: {cents: 100}, type: "test"}]);
   expect(price.subtotal).toBe(83);
   expect(price.taxes).toBe(17);
   expect(price.discount).toBe(0);
@@ -48,7 +48,7 @@ test('country based VAT when prices include taxes', () => {
 });
 
 test('coupon with no taxes', () => {
-  const price = calculatePrices(null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(10);
@@ -56,7 +56,7 @@ test('coupon with no taxes', () => {
 });
 
 test('coupon with vat', () => {
-  const price = calculatePrices(null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 9, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(9);
   expect(price.discount).toBe(10);
@@ -64,7 +64,7 @@ test('coupon with vat', () => {
 });
 
 test('coupon with vat when prices include taxes', () => {
-  const price = calculatePrices({prices_include_taxes: true}, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 9, type: "test"}]);
+  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(92);
   expect(price.taxes).toBe(8);
   expect(price.discount).toBe(10);
@@ -83,7 +83,7 @@ test('pricing items', () => {
       countries: ["DE"]
     }]
   };
-  const price = calculatePrices(settings, "DE", "EUR", null, [{
+  const price = calculatePrices(settings, null, "DE", "EUR", null, [{
     price: {cents: 100, items: [{cents: 80, type: "book"}, {cents: 20, type: "ebook"}]},
     type: "book"
   }]);
@@ -94,7 +94,7 @@ test('pricing items', () => {
 });
 
 test('quantity', () => {
-  const price = calculatePrices(null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, quantity: 2, vat: 9, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, quantity: 2, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(200);
   expect(price.taxes).toBe(18);
   expect(price.discount).toBe(20);
