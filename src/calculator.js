@@ -1,3 +1,5 @@
+import {checkClaims} from './claims';
+
 class Price {
   constructor() {
     this.subtotal = 0;
@@ -22,14 +24,17 @@ function findTax(settings, country, type) {
   return null;
 }
 
-function couponValidFor(coupon, item) {
+function couponValidFor(claims, coupon, item) {
+  if (!checkClaims(claims, coupon.claims)) {
+    return false;
+  }
   if (coupon.product_types && coupon.product_types.length) {
     return coupon.product_types.indexOf(item.type) > -1;
   }
   return true;
 }
 
-export function calculatePrices(settings, country, currency, coupon, items) {
+export function calculatePrices(settings, claims, country, currency, coupon, items) {
   const price = new Price();
   const includeTaxes = settings && settings.prices_include_taxes;
   price.items = [];
@@ -68,9 +73,20 @@ export function calculatePrices(settings, country, currency, coupon, items) {
       });
     }
 
-    if (coupon && couponValidFor(coupon, item)) {
+    if (coupon && couponValidFor(claims, coupon, item)) {
       const amountToDiscount = includeTaxes ? itemPrice.subtotal + itemPrice.taxes : itemPrice.subtotal;
       itemPrice.discount = Math.round(amountToDiscount * coupon.percentage / 100);
+    }
+    if (settings && settings.member_discounts) {
+      settings.member_discounts.forEach((discount) => {
+        console.log('checking if discount applies', discount);
+        if (couponValidFor(claims, discount, item)) {
+          const amountToDiscount = includeTaxes ? itemPrice.subtotal + itemPrice.taxes : itemPrice.subtotal;
+          console.log('applying discount on ', amountToDiscount, discount.percentage);
+          itemPrice.discount = itemPrice.discount || 0;
+          itemPrice.discount += Math.round(amountToDiscount * discount.percentage / 100);
+        }
+      });
     }
 
     itemPrice.total = itemPrice.subtotal - itemPrice.discount + itemPrice.taxes;
