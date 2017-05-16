@@ -1,18 +1,16 @@
 import API from "micro-api-client";
 import {calculatePrices} from "./calculator";
+import {checkClaims} from './claims';
 
 const HTTPRegexp = /^http:\/\//;
 const cartKey = "gocommerce.shopping-cart";
 const vatnumbers = {};
 
-function checkRole(user, role) {
-  return user && user.roles && user.roles.filter((r) => r == role)[0];
-}
 
 function getPrice(prices, currency, user) {
   return prices
     .filter((price) => currency == (price.currency || "USD").toUpperCase())
-    .filter((price) => price.role ? checkRole(user) : true)
+    .filter((price) => price.claims ? checkClaims(user && user.claims && user.claims(), price.claims) : true)
     .map((price) => {
       price.cents = price.cents || parseInt(parseFloat(price.amount) * 100);
       return price;
@@ -158,8 +156,8 @@ export default class GoCommerce {
       }
     }
 
-    const price = calculatePrices(this.settings, this.billing_country, this.currency, this.coupon, items);
-    console.log('price %o',price);
+    const claims = this.user && this.user.claims && this.user.claims();
+    const price = calculatePrices(this.settings, claims, this.billing_country, this.currency, this.coupon, items);
 
     cart.subtotal = priceObject(price.subtotal, this.currency);
     cart.discount = priceObject(price.discount, this.currency);
