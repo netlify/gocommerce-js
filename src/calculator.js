@@ -34,6 +34,28 @@ function couponValidFor(claims, coupon, item) {
   return true;
 }
 
+function fixedAmount(amounts, currency) {
+  const fixed = amounts && amounts.filter((amount) => amount.currency === currency)[0];
+  return (fixed && fixed.amount) || 0;
+}
+
+function calculateDiscount(amountToDiscount, taxes, percentage, fixed, includeTaxes) {
+  let discount = 0;
+	if (includeTaxes) {
+		amountToDiscount = amountToDiscount + taxes;
+	}
+	if (percentage > 0) {
+		discount = Math.round(amountToDiscount * percentage / 100);
+	}
+	discount += fixed;
+
+	if (discount > amountToDiscount) {
+		return amountToDiscount;
+	}
+	return discount;
+}
+
+
 export function calculatePrices(settings, claims, country, currency, coupon, items) {
   const price = new Price();
   const includeTaxes = settings && settings.prices_include_taxes;
@@ -74,17 +96,17 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
     }
 
     if (coupon && couponValidFor(claims, coupon, item)) {
-      const amountToDiscount = includeTaxes ? itemPrice.subtotal + itemPrice.taxes : itemPrice.subtotal;
-      itemPrice.discount = Math.round(amountToDiscount * coupon.percentage / 100);
+      itemPrice.discount = calculateDiscount(
+        itemPrice.subtotal, itemPrice.taxes, coupon.percentage, fixedAmount(coupon.fixed), includeTaxes
+      );
     }
     if (settings && settings.member_discounts) {
       settings.member_discounts.forEach((discount) => {
-        console.log('checking if discount applies', discount);
         if (couponValidFor(claims, discount, item)) {
-          const amountToDiscount = includeTaxes ? itemPrice.subtotal + itemPrice.taxes : itemPrice.subtotal;
-          console.log('applying discount on ', amountToDiscount, discount.percentage);
           itemPrice.discount = itemPrice.discount || 0;
-          itemPrice.discount += Math.round(amountToDiscount * discount.percentage / 100);
+          itemPrice.discount += calculateDiscount(
+            itemPrice.subtotal, itemPrice.taxes, discount.percentage, fixedAmount(discount.fixed), includeTaxes
+          );
         }
       });
     }
