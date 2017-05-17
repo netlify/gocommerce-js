@@ -97,7 +97,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
 
     if (coupon && couponValidFor(claims, coupon, item)) {
       itemPrice.discount = calculateDiscount(
-        itemPrice.subtotal, itemPrice.taxes, coupon.percentage, fixedAmount(coupon.fixed), includeTaxes
+        itemPrice.subtotal, itemPrice.taxes, coupon.percentage, fixedAmount(coupon.fixed, currency), includeTaxes
       );
     }
     if (settings && settings.member_discounts) {
@@ -105,7 +105,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
         if (couponValidFor(claims, discount, item)) {
           itemPrice.discount = itemPrice.discount || 0;
           itemPrice.discount += calculateDiscount(
-            itemPrice.subtotal, itemPrice.taxes, discount.percentage, fixedAmount(discount.fixed), includeTaxes
+            itemPrice.subtotal, itemPrice.taxes, discount.percentage, fixedAmount(discount.fixed, currency), includeTaxes
           );
         }
       });
