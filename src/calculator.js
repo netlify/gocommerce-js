@@ -36,7 +36,7 @@ function couponValidFor(claims, coupon, item) {
 
 function fixedAmount(amounts, currency) {
   const fixed = amounts && amounts.filter((amount) => amount.currency === currency)[0];
-  return (fixed && fixed.amount) || 0;
+  return (fixed && Math.round(parseFloat(fixed.amount) * 100)) || 0;
 }
 
 function calculateDiscount(amountToDiscount, taxes, percentage, fixed, includeTaxes) {
