@@ -129,31 +129,42 @@ export default class GoCommerce {
     }
   }
 
+  getCartItem(item_data) {
+    const item = Object.assign({}, item_data, {
+      price: getPrice(item_data.prices, this.currency, this.user)
+    });
+    (item.price.items || []).forEach((priceItem) => {
+      priceItem.cents = (parseFloat(priceItem.amount) * 100).toFixed(0);
+    });
+    if (item_data.addons) {
+      item.addons = [];
+      item_data.addons.forEach((addon) => {
+        item.addons.push(Object.assign({}, addon, {
+          price: getPrice(addon.prices, this.currency, this.user)
+        }));
+      });
+    }
+    if (item.addons) {
+      item.addonPrice = priceObject(
+        item.addons.reduce((sum, addon) => sum + parseFloat(addon.price.amount) * 100, 0),
+        this.currency
+      );
+    }
+    return item;
+  }
+
+  calculatePrice(item_data) {
+    const item = this.getCartItem(item_data);
+    const claims = this.user && this.user.claims && this.user.claims();
+    return calculatePrices(this.settings, claims, this.billing_country, this.currency, this.coupon, [item]);
+  }
+
   getCart() {
     const cart = {items: {}};
     const items = [];
     for (const key in this.line_items) {
-      const item = cart.items[key] = Object.assign({}, this.line_items[key], {
-        price: getPrice(this.line_items[key].prices, this.currency, this.user)
-      });
-      (item.price.items || []).forEach((priceItem) => {
-        priceItem.cents = (parseFloat(priceItem.amount) * 100).toFixed(0);
-      });
+      const item = cart.items[key] = this.getCartItem(this.line_items[key]);
       items.push(item);
-      if (this.line_items[key].addons) {
-        item.addons = [];
-        this.line_items[key].addons.forEach((addon) => {
-          item.addons.push(Object.assign({}, addon, {
-            price: getPrice(addon.prices, this.currency, this.user)
-          }));
-        });
-      }
-      if (item.addons) {
-        item.addonPrice = priceObject(
-          item.addons.reduce((sum, addon) => sum + parseFloat(addon.price.amount) * 100, 0),
-          this.currency
-        );
-      }
     }
 
     const claims = this.user && this.user.claims && this.user.claims();
