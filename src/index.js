@@ -172,6 +172,8 @@ export default class GoCommerce {
 
     cart.subtotal = priceObject(price.subtotal, this.currency);
     cart.discount = priceObject(price.discount, this.currency);
+    cart.couponDiscount = priceObject(price.couponDiscount, this.currency);
+    cart.memberDiscount = priceObject(price.memberDiscount, this.currency);
     cart.taxes = priceObject(price.taxes, this.currency);
     cart.total = priceObject(price.total, this.currency);
 

@@ -4,6 +4,8 @@ class Price {
   constructor() {
     this.subtotal = 0;
     this.discount = 0;
+    this.couponDiscount = 0;
+    this.memberDiscount = 0;
     this.taxes = 0;
     this.total = 0;
   }
@@ -119,6 +121,8 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
 
     price.subtotal += (itemPrice.subtotal * itemPrice.quantity);
     price.discount += (itemPrice.discount * itemPrice.quantity);
+    price.couponDiscount += (itemPrice.couponDiscount * itemPrice.quantity);
+    price.memberDiscount += (itemPrice.memberDiscount * itemPrice.quantity);
     price.taxes    += (itemPrice.taxes    * itemPrice.quantity);
     price.total    += (itemPrice.total    * itemPrice.quantity);
   });
