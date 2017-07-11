@@ -99,14 +99,17 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
       itemPrice.discount = calculateDiscount(
         itemPrice.subtotal, itemPrice.taxes, coupon.percentage, fixedAmount(coupon.fixed, currency), includeTaxes
       );
+      itemPrice.couponDiscount = itemPrice.discount;
     }
     if (settings && settings.member_discounts) {
       settings.member_discounts.forEach((discount) => {
         if (couponValidFor(claims, discount, item)) {
-          itemPrice.discount = itemPrice.discount || 0;
-          itemPrice.discount += calculateDiscount(
+          const memberDiscount = calculateDiscount(
             itemPrice.subtotal, itemPrice.taxes, discount.percentage, fixedAmount(discount.fixed, currency), includeTaxes
           );
+          itemPrice.discount = itemPrice.discount || 0;
+          itemPrice.discount += memberDiscount;
+          itemPrice.memberDiscount = memberDiscount;
         }
       });
     }
