@@ -8,14 +8,14 @@ the UI for signups, password recovery, login and logout.
 ## Usage
 
 ```js
-import GoCommerce from `gocommerce-js`;
+import GoCommerce from "gocommerce-js";
 
 const commerce = new GoCommerce({
   APIUrl: "https://commerce.netlify.com"
 });
 
 commerce.addToCart({
-	path: '/producs/book-1/',
+	path: "/products/book-1/",
 	quantity: 2,
 	meta: {
     // You can add anything in metadata and use it in your checkout ui
@@ -43,7 +43,7 @@ console.log(commerce.getCart());
 }
 */
 
-commerce.updateCard("netlify-mug-01", 3); // Set to 0 to remove
+commerce.updateCart("netlify-mug-01", 3); // Set to 0 to remove
 
 commerce.order({
   email: "matt@netlify.com",
@@ -75,7 +75,7 @@ commerce.clearCart(); // Will be called automatically after a successful order
 
 You can change country (for VAT calculations) or currency at any time:
 
-```
+```js
 commerce.setCountry("USA");
 commerce.setCurrency("USD");
 ```
