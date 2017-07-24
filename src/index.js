@@ -285,10 +285,6 @@ export default class GoCommerce {
     }
   }
 
-  paypalPaymentInfo(paymentID) {
-    return this.api.request(`/paypal/${paymentID}`);
-  }
-
   resendConfirmation(orderID, email) {
     const path = `/orders/${orderID}/receipt`;
     return this.authHeaders().then((headers) => this.api.request(path, {
