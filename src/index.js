@@ -331,6 +331,16 @@ export default class GoCommerce {
       }));
   }
 
+  orderReceipt(orderID, template) {
+    let path = `/orders/${orderID}/receipt`;
+    if (template) {
+      path += `?template=${template}`;
+    }
+    return this.authHeaders(true).then((headers) => this.api.request(path, {
+      headers
+    }));
+  }
+
   userDetails(userId) {
     userId = userId || (this.user && this.user.id);
 
