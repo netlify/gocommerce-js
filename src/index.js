@@ -72,6 +72,35 @@ export default class GoCommerce {
     this.loadCart();
   }
 
+  _authOptionalRequest(path, options = {}) {
+    return this.authHeaders(false)
+      .then(headers => {
+        return this._request(path, Object.assign({ headers }, options))
+      });
+  }
+
+  _authRequiredRequest(path, options = {}) {
+    return this.authHeaders(true)
+      .then(headers => {
+        return this._request(path, Object.assign({ headers }, options))
+      });
+  }
+
+  _request(path, options = {}) {
+    return this.api
+      .request(path, options)
+      .catch(err => {
+        if (err instanceof JSONHTTPError && err.json) {
+          if (err.json.msg) {
+            err.message = err.json.msg;
+          } else if (err.json.error) {
+            err.message = `${err.json.error}: ${err.json.error_description}`;
+          }
+        }
+        return Promise.reject(err);
+      });
+  }
+
   setUser(user) {
     this.user = user;
   }
@@ -238,9 +267,8 @@ export default class GoCommerce {
         line_items.push(this.line_items[id]);
       }
 
-      return this.authHeaders().then((headers) => this.api.request("/orders", {
+      return this._authOptionalRequest("/orders", {
         method: "POST",
-        headers: headers,
         body: JSON.stringify({
           email,
           shipping_address, shipping_address_id,
@@ -251,7 +279,7 @@ export default class GoCommerce {
           data,
           line_items
         })
-      })).then((order) => {
+      }).then((order) => {
         const cart = this.getCart();
         return {cart, order};
       });
@@ -266,9 +294,8 @@ export default class GoCommerce {
     const {order_id, amount, provider, stripe_token, paypal_payment_id, paypal_user_id} = paymentDetails;
     if (order_id && amount && provider && (stripe_token || (paypal_payment_id && paypal_user_id))) {
       const cart = this.getCart();
-      return this.authHeaders().then((headers) => this.api.request(`/orders/${order_id}/payments`, {
+      return this._authOptionalRequest(`/orders/${order_id}/payments`, {
         method: "POST",
-        headers: headers,
         body: JSON.stringify({
           amount,
           order_id,
@@ -278,7 +305,7 @@ export default class GoCommerce {
           paypal_user_id,
           currency: this.currency
         })
-      }));
+      });
     } else {
       return Promise.reject(
         "Invalid paymentDetails - must have an order_id, an amount, a provider, and a stripe_token or a paypal_payment_id and paypal_user_id"
@@ -288,29 +315,26 @@ export default class GoCommerce {
 
   resendConfirmation(orderID, email) {
     const path = `/orders/${orderID}/receipt`;
-    return this.authHeaders().then((headers) => this.api.request(path, {
-      headers,
+    return this._authOptionalRequest(path, {
       method: "POST",
       body: JSON.stringify({email})
-    }));
+    });
   }
 
   claimOrders() {
     if (this.user) {
-      return this.authHeaders().then((headers) => this.api.request("/claim", {
-        headers,
+      return this._authOptionalRequest("/claim", {
         method: "POST"
-      }));
+      });
     }
     return Promise.resolve(null);
   }
 
   updateOrder(orderId, attributes) {
-    return this.authHeaders(true).then((headers) => this.api.request(`/orders/${orderId}`, {
-      headers,
+    return this._authRequiredRequest(`/orders/${orderId}`, {
       method: "PUT",
       body: JSON.stringify(attributes)
-    }));
+    });
   }
 
   orderHistory(params) {
@@ -320,15 +344,11 @@ export default class GoCommerce {
       delete params.user_id;
     }
     path = pathWithQuery(path, params);
-    return this.authHeaders(true).then((headers) => this.api.request(path, {
-      headers
-    })).then(({items, pagination}) => ({orders: items, pagination}));
+    return this._authRequiredRequest(path).then(({items, pagination}) => ({orders: items, pagination}));
   }
 
   orderDetails(orderID) {
-      return this.authHeaders(true).then((headers) => this.api.request(`/orders/${orderID}`, {
-        headers
-      }));
+    return this._authRequiredRequest(`/orders/${orderID}`);
   }
 
   orderReceipt(orderID, template) {
@@ -336,17 +356,13 @@ export default class GoCommerce {
     if (template) {
       path += `?template=${template}`;
     }
-    return this.authHeaders(true).then((headers) => this.api.request(path, {
-      headers
-    }));
+    return this._authRequiredRequest(path);
   }
 
   userDetails(userId) {
     userId = userId || (this.user && this.user.id);
 
-    return this.authHeaders(true).then((headers) => this.api.request(`/users/${userId}`, {
-      headers
-    }));
+    return this._authRequiredRequest(`/users/${userId}`);
   }
 
   downloads(params) {
@@ -356,30 +372,22 @@ export default class GoCommerce {
       delete params.order_id;
     }
     path = pathWithQuery(path, params);
-    return this.authHeaders().then((headers) => this.api.request(path, {
-      headers
-    })).then(({items, pagination}) => ({downloads: items, pagination}));
+    return this._authOptionalRequest(path).then(({items, pagination}) => ({downloads: items, pagination}));
   }
 
   downloadURL(downloadId) {
     const path = `/downloads/${downloadId}`;
-    return this.authHeaders().then((headers) => this.api.request(path, {
-      headers
-    })).then((response) => response.url);
+    return this._authOptionalRequest(path).then((response) => response.url);
   }
 
   users(params) {
     const path = pathWithQuery("/users", params);
-    return this.authHeaders(true).then((headers) => this.api.request(path, {
-      headers
-    })).then(({items, pagination}) => ({users: items, pagination}));
+    return this._authRequiredRequest(path).then(({items, pagination}) => ({users: items, pagination}));
   }
 
   report(name, params) {
     const path = pathWithQuery(`/reports/${name}`, params);
-    return this.authHeaders(true).then((headers) => this.api.request(path, {
-      headers
-    }));
+    return this._authRequiredRequest(path);
   }
 
   authHeaders(required) {
@@ -437,7 +445,7 @@ export default class GoCommerce {
       return Promise.resolve(false);
     }
 
-    return this.api.request(`/vatnumbers/${vatnumber}`).then((response) => {
+    return this._request(`/vatnumbers/${vatnumber}`).then((response) => {
       vatnumbers[vatnumber] = response;
       this.vatnumber_valid = response.valid;
       return response.valid;
@@ -445,9 +453,7 @@ export default class GoCommerce {
   }
 
   verifyCoupon(code) {
-    return this.authHeaders(false).then((headers) => this.api.request(`/coupons/${code}`, {
-      headers
-    }));
+    return this._authOptionalRequest(`/coupons/${code}`);
   }
 
   persistCart() {
