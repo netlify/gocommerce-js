@@ -48,8 +48,7 @@ commerce.updateCart("netlify-mug-01", 3); // Set to 0 to remove
 commerce.order({
   email: "matt@netlify.com",
   shipping_address: {
-    first_name: "Matt",
-    last_name: "Biilmann",
+    name: "Matt Biilmann",
     company: "netlify", // Optional
     address: "610 22nd Street",
     city: "San Francisco",
