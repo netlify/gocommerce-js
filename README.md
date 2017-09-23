@@ -50,7 +50,7 @@ commerce.order({
   shipping_address: {
     name: "Matt Biilmann",
     company: "netlify", // Optional
-    address: "610 22nd Street",
+    address1: "610 22nd Street",
     city: "San Francisco",
     state: "CA",
     country: "USA",
