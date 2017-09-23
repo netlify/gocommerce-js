@@ -60,6 +60,7 @@ commerce.order({
 }).then(({cart, order}) => {
   return commerce.payment({
     // Get a token from Stripes button or a custom integration
+    "provider": "stripe",
     "stripe_token": TOKEN_FROM_STRIPE_CC_FORM,
     // The commerce API will verify that the amount and order ID match
     "amount": cart.total.cents,
