@@ -1,6 +1,6 @@
 {
   "name": "gocommerce-js",
-  "version": "4.0.0",
+  "version": "3.10.0",
   "description": "GoCommerce API client for JavaScript",
   "main": "lib/index.js",
   "files": [
@@ -28,6 +28,6 @@
     "uglify-js": "^2.6.2"
   },
   "dependencies": {
-    "micro-api-client": "^3.0.2"
+    "micro-api-client": "^2.0.0"
   }
 }
