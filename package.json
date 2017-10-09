@@ -1,6 +1,6 @@
 {
   "name": "gocommerce-js",
-  "version": "3.10.1",
+  "version": "4.1.0",
   "description": "GoCommerce API client for JavaScript",
   "main": "lib/index.js",
   "files": [
