@@ -33,6 +33,9 @@ function couponValidFor(claims, coupon, item) {
   if (coupon.product_types && coupon.product_types.length) {
     return coupon.product_types.indexOf(item.type) > -1;
   }
+  if (coupon.products && coupon.products.length) {
+    return coupon.products.indexOf(item.sku) > -1;
+  }
   return true;
 }
 
@@ -111,12 +114,13 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
           );
           itemPrice.discount = itemPrice.discount || 0;
           itemPrice.discount += memberDiscount;
-          itemPrice.memberDiscount = memberDiscount;
+          itemPrice.memberDiscount = itemPrice.memberDiscount || 0;
+          itemPrice.memberDiscount += memberDiscount;
         }
       });
     }
 
-    itemPrice.total = itemPrice.subtotal - itemPrice.discount + itemPrice.taxes;
+    itemPrice.total = Math.max(0, itemPrice.subtotal - itemPrice.discount + itemPrice.taxes);
     price.items.push(itemPrice);
 
     price.subtotal += (itemPrice.subtotal * itemPrice.quantity);

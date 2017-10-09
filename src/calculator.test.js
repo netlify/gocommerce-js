@@ -133,3 +133,47 @@ test('member discounts', () => {
   expect(price.total).toBe(90);
 
 });
+
+test('fixed member discounts', () => {
+  const settings = {
+    "member_discounts": [
+      {
+        "claims": {"app_metadata.subscription.plan": "member"},
+        "fixed": [{"amount": "15.00", "currency": "USD"}, {"amount": "15.00", "currency": "EUR"}],
+        "product_types": ["Book"]
+      }
+    ]
+  };
+  const price = calculatePrices(
+    settings,
+    {app_metadata: {subscription: {plan: "member"}}},
+    "USA", "USD", null,
+    [{price: {cents: 2490}, type: "Book"}]
+  );
+  expect(price.subtotal).toBe(2490);
+  expect(price.taxes).toBe(0);
+  expect(price.discount).toBe(1500);
+  expect(price.total).toBe(990);
+});
+
+test('fixed member discounts', () => {
+  const settings = {
+    "member_discounts": [
+      {
+        "claims": {"app_metadata.subscription.plan": "member"},
+        "fixed": [{"amount": "15.00", "currency": "USD"}, {"amount": "15.00", "currency": "EUR"}],
+        "products": ["best-book-ever"]
+      }
+    ]
+  };
+  const price = calculatePrices(
+    settings,
+    {app_metadata: {subscription: {plan: "member"}}},
+    "USA", "USD", null,
+    [{price: {cents: 2490}, type: "Book", sku: "best-book-ever"}]
+  );
+  expect(price.subtotal).toBe(2490);
+  expect(price.taxes).toBe(0);
+  expect(price.discount).toBe(1500);
+  expect(price.total).toBe(990);
+});
