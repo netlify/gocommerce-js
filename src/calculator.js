@@ -72,7 +72,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
 
     const taxAmounts = [];
     if (item.vat) {
-      taxAmounts.push({price: itemPrice.subtotal, percentage: item.vat});
+      taxAmounts.push({price: itemPrice.subtotal, percentage: parseInt(item.vat, 10)});
     } else if (settings && item.price.items && item.price.items.length) {
       item.price.items.forEach((priceItem) => {
         const tax = findTax(settings, country, priceItem.type);

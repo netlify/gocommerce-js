@@ -29,6 +29,15 @@ test('fixed vat when prices include taxes', () => {
   expect(price.total).toBe(100);
 });
 
+test('fixed vat when prices include taxes', () => {
+
+  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", null, [{price: {amount: "499", currency: "USD", cents: 49900}, vat: "20", type: "Ticket"}]);
+  expect(price.subtotal).toBe(41583);
+  expect(price.taxes).toBe(8317);
+  expect(price.discount).toBe(0);
+  expect(price.total).toBe(49900);
+});
+
 test('fixed vat when prices include taxes for a real example', () => {
   const price = calculatePrices({
     taxes: [{percentage: 7, product_types: ["book"], countries: ["Netherlands"]}],
