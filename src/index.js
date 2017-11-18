@@ -326,7 +326,7 @@ export default class GoCommerce {
   }
 
   orderDetails(orderID) {
-      return this.authHeaders(true).then((headers) => this.api.request(`/orders/${orderID}`, {
+      return this.authHeaders().then((headers) => this.api.request(`/orders/${orderID}`, {
         headers
       }));
   }
