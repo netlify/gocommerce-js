@@ -50,7 +50,7 @@ commerce.order({
   shipping_address: {
     name: "Matt Biilmann",
     company: "netlify", // Optional
-    address: "610 22nd Street",
+    address1: "610 22nd Street",
     city: "San Francisco",
     state: "CA",
     country: "USA",
@@ -60,6 +60,7 @@ commerce.order({
 }).then(({cart, order}) => {
   return commerce.payment({
     // Get a token from Stripes button or a custom integration
+    "provider": "stripe",
     "stripe_token": TOKEN_FROM_STRIPE_CC_FORM,
     // The commerce API will verify that the amount and order ID match
     "amount": cart.total.cents,
