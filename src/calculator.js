@@ -76,9 +76,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
     } else if (settings && item.price.items && item.price.items.length) {
       item.price.items.forEach((priceItem) => {
         const tax = findTax(settings, country, priceItem.type);
-        if (tax) {
-          taxAmounts.push({price: priceItem.cents, percentage: tax.percentage});
-        }
+        taxAmounts.push({price: priceItem.cents, percentage: tax ? tax.percentage : 0});
       });
     } else {
       const tax = findTax(settings, country, item.type);
