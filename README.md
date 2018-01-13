@@ -2,8 +2,7 @@
 
 This is a JS client library for [GoCommerce](https://github.com/netlify/gocommerce) API.
 
-It lets you signup and authenticate users and is a building block for constructing
-the UI for signups, password recovery, login and logout.
+It handles orders and payments. Integrates with Stripe for payments and will support international pricing and VAT verification.
 
 ## Usage
 
