@@ -54,6 +54,13 @@ function pathWithQuery(path, params) {
   return path;
 }
 
+function cleanPath(path) {
+  if (path.match(/^https?:\/\//)) {
+    return path.replace(/^https?:\/\/[^\/]+/, '');
+  }
+  return path;
+}
+
 export default class GoCommerce {
   constructor(options) {
     if (!options.APIUrl) {
@@ -77,7 +84,8 @@ export default class GoCommerce {
   }
 
   addToCart(item) {
-    const {path, quantity, meta} = item;
+    const {quantity, meta} = item;
+    const path = cleanPath(item.path);
     if (quantity && path) {
       return fetch(path).then((response) => {
         if (!response.ok) { return Promise.reject(`Failed to fetch ${path}`); }
