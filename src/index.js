@@ -55,10 +55,7 @@ function pathWithQuery(path, params) {
 }
 
 function cleanPath(path) {
-  if (path.match(/^https?:\/\//)) {
-    return path.replace(/^https?:\/\/[^\/]+/, '');
-  }
-  return path;
+  return path.replace(/^https?:\/\/[^\/]+/, '');
 }
 
 export default class GoCommerce {
