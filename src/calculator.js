@@ -6,6 +6,7 @@ class Price {
     this.discount = 0;
     this.couponDiscount = 0;
     this.memberDiscount = 0;
+    this.netTotal = 0;
     this.taxes = 0;
     this.total = 0;
   }
@@ -44,11 +45,8 @@ function fixedAmount(amounts, currency) {
   return (fixed && Math.round(parseFloat(fixed.amount) * 100)) || 0;
 }
 
-function calculateDiscount(amountToDiscount, taxes, percentage, fixed, includeTaxes) {
+function calculateDiscount(amountToDiscount, percentage, fixed) {
   let discount = 0;
-	if (includeTaxes) {
-		amountToDiscount = amountToDiscount + taxes;
-	}
 	if (percentage > 0) {
 		discount = Math.round(amountToDiscount * percentage / 100);
 	}
@@ -60,47 +58,61 @@ function calculateDiscount(amountToDiscount, taxes, percentage, fixed, includeTa
 	return discount;
 }
 
+function calculateTaxes(amountToTax, originalPrice, item, settings, country) {
+  const includeTaxes = settings && settings.prices_include_taxes;
+  const ratio = amountToTax / originalPrice;
+
+  const taxAmounts = [];
+  if (item.vat) {
+    taxAmounts.push({price: amountToTax, percentage: parseInt(item.vat, 10)});
+  } else if (settings && item.price.items && item.price.items.length) {
+    item.price.items.forEach((priceItem) => {
+      const realPrice = priceItem.cents * ratio;
+      const tax = findTax(settings, country, priceItem.type);
+      taxAmounts.push({price: realPrice, percentage: tax ? tax.percentage : 0});
+    });
+  } else {
+    const tax = findTax(settings, country, item.type);
+    if (tax) {
+      taxAmounts.push({price: amountToTax, percentage: tax.percentage});
+    }
+  }
+
+  let taxes = 0;
+  let netTotal = 0;
+  if (taxAmounts.length) {
+    taxAmounts.forEach((tax) => {
+      if (includeTaxes) {
+        tax.price = Math.round(tax.price / (100 + tax.percentage) * 100);
+      }
+      netTotal += tax.price;
+      taxes += Math.round(tax.price * tax.percentage / 100);
+    });
+  } else {
+    netTotal = amountToTax;
+  }
+
+  return {
+    taxes,
+    netTotal,
+  };
+}
+
 
 export function calculatePrices(settings, claims, country, currency, coupon, items) {
   const price = new Price();
-  const includeTaxes = settings && settings.prices_include_taxes;
   price.items = [];
   items && items.forEach((item) => {
     const itemPrice = new Price();
     itemPrice.quantity = item.quantity || 1;
-    itemPrice.subtotal = item.price.cents + (item.addonPrice ? item.addonPrice.cents : 0);
 
-    const taxAmounts = [];
-    if (item.vat) {
-      taxAmounts.push({price: itemPrice.subtotal, percentage: parseInt(item.vat, 10)});
-    } else if (settings && item.price.items && item.price.items.length) {
-      item.price.items.forEach((priceItem) => {
-        const tax = findTax(settings, country, priceItem.type);
-        taxAmounts.push({price: priceItem.cents, percentage: tax ? tax.percentage : 0});
-      });
-    } else {
-      const tax = findTax(settings, country, item.type);
-      if (tax) {
-        taxAmounts.push({price: itemPrice.subtotal, percentage: tax.percentage});
-      }
-    }
-
-    if (taxAmounts.length) {
-      if (includeTaxes) {
-        itemPrice.subtotal = 0;
-      }
-      taxAmounts.forEach((tax) => {
-        if (includeTaxes) {
-          tax.price = Math.round(tax.price / (100 + tax.percentage) * 100);
-          itemPrice.subtotal += tax.price;
-        }
-        itemPrice.taxes += Math.round(tax.price * tax.percentage / 100);
-      });
-    }
+    const originalPrice = item.price.cents + (item.addonPrice ? item.addonPrice.cents : 0);
+    const { netTotal: subtotal } = calculateTaxes(originalPrice, originalPrice, item, settings, country);
+    itemPrice.subtotal = subtotal;
 
     if (coupon && couponValidFor(claims, coupon, item)) {
       itemPrice.discount = calculateDiscount(
-        itemPrice.subtotal, itemPrice.taxes, coupon.percentage, fixedAmount(coupon.fixed, currency), includeTaxes
+        originalPrice, coupon.percentage, fixedAmount(coupon.fixed, currency)
       );
       itemPrice.couponDiscount = itemPrice.discount;
     }
@@ -108,7 +120,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
       settings.member_discounts.forEach((discount) => {
         if (couponValidFor(claims, discount, item)) {
           const memberDiscount = calculateDiscount(
-            itemPrice.subtotal, itemPrice.taxes, discount.percentage, fixedAmount(discount.fixed, currency), includeTaxes
+            originalPrice, discount.percentage, fixedAmount(discount.fixed, currency)
           );
           itemPrice.discount = itemPrice.discount || 0;
           itemPrice.discount += memberDiscount;
@@ -118,13 +130,19 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
       });
     }
 
-    itemPrice.total = Math.max(0, itemPrice.subtotal - itemPrice.discount + itemPrice.taxes);
+    const discountedPrice = Math.max(0, originalPrice - itemPrice.discount);
+
+    const { taxes, netTotal } = calculateTaxes(discountedPrice, originalPrice, item, settings, country);
+    itemPrice.taxes = taxes;
+    itemPrice.netTotal = netTotal;
+    itemPrice.total = itemPrice.netTotal + itemPrice.taxes;
     price.items.push(itemPrice);
 
     price.subtotal += (itemPrice.subtotal * itemPrice.quantity);
     price.discount += (itemPrice.discount * itemPrice.quantity);
     price.couponDiscount += (itemPrice.couponDiscount * itemPrice.quantity);
     price.memberDiscount += (itemPrice.memberDiscount * itemPrice.quantity);
+    price.netTotal += (itemPrice.netTotal * itemPrice.quantity);
     price.taxes    += (itemPrice.taxes    * itemPrice.quantity);
     price.total    += (itemPrice.total    * itemPrice.quantity);
   });
