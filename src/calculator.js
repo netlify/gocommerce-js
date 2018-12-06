@@ -6,6 +6,7 @@ class Price {
     this.discount = 0;
     this.couponDiscount = 0;
     this.memberDiscount = 0;
+    this.discountItems = [];
     this.netTotal = 0;
     this.taxes = 0;
     this.total = 0;
@@ -43,6 +44,14 @@ function couponValidFor(claims, coupon, item) {
 function fixedAmount(amounts, currency) {
   const fixed = amounts && amounts.filter((amount) => amount.currency === currency)[0];
   return (fixed && Math.round(parseFloat(fixed.amount) * 100)) || 0;
+}
+
+function discountItem(type, percentage = 0, fixed = 0) {
+  return {
+    type,
+    percentage,
+    fixed,
+  };
 }
 
 function calculateDiscount(amountToDiscount, percentage = 0, fixed = 0) {
@@ -115,6 +124,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
         originalPrice, coupon.percentage, fixedAmount(coupon.fixed, currency)
       );
       itemPrice.couponDiscount = itemPrice.discount;
+      itemPrice.discountItems.push(discountItem("coupon", coupon.percentage, fixedAmount(coupon.fixed, currency)))
     }
     if (settings && settings.member_discounts) {
       settings.member_discounts.forEach((discount) => {
@@ -126,6 +136,7 @@ export function calculatePrices(settings, claims, country, currency, coupon, ite
           itemPrice.discount += memberDiscount;
           itemPrice.memberDiscount = itemPrice.memberDiscount || 0;
           itemPrice.memberDiscount += memberDiscount;
+          itemPrice.discountItems.push(discountItem("member", discount.percentage, fixedAmount(discount.fixed, currency)))
         }
       });
     }
