@@ -45,7 +45,7 @@ function fixedAmount(amounts, currency) {
   return (fixed && Math.round(parseFloat(fixed.amount) * 100)) || 0;
 }
 
-function calculateDiscount(amountToDiscount, percentage, fixed) {
+function calculateDiscount(amountToDiscount, percentage = 0, fixed = 0) {
   let discount = 0;
 	if (percentage > 0) {
 		discount = Math.round(amountToDiscount * percentage / 100);
