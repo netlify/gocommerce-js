@@ -1,5 +1,7 @@
 import {calculatePrices} from './calculator';
 
+const defaultCoupon = {percentage: 10, product_types: ["test"]};
+
 test('no items', () => {
   const price = calculatePrices(null, null, "USA", "USD", null, []);
   expect(price.total).toBe(0);
@@ -75,7 +77,7 @@ test('country based VAT when prices include taxes', () => {
 });
 
 test('coupon with no taxes', () => {
-  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(10);
@@ -84,7 +86,7 @@ test('coupon with no taxes', () => {
 });
 
 test('coupon with vat', () => {
-  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 10, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, vat: 10, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(9);
   expect(price.discount).toBe(10);
@@ -93,7 +95,7 @@ test('coupon with vat', () => {
 });
 
 test('coupon with vat when prices include taxes', () => {
-  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 9, type: "test"}]);
+  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(92);
   expect(price.taxes).toBe(7);
   expect(price.discount).toBe(10);
@@ -125,7 +127,7 @@ test('pricing items', () => {
 });
 
 test('quantity', () => {
-  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, quantity: 2, vat: 9, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, quantity: 2, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(200);
   expect(price.taxes).toBe(16);
   expect(price.discount).toBe(20);
