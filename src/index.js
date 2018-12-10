@@ -43,15 +43,19 @@ function centsToAmount(cents) {
   return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
-function pathWithQuery(path, params) {
+function pathWithQuery(path, params, { negatedParams }) {
+  const query = [];
   if (params) {
-    const query = [];
     for (const key in params) {
       query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
     }
-    return `${path}?${query.join("&")}`;
   }
-  return path;
+  if (negatedParams) {
+    for (const key in negatedParams) {
+      query.push(`${encodeURIComponent(key)}!=${encodeURIComponent(negatedParams[key])}`);
+    }
+  }
+  return query.length > 0 ? `${path}?${query.join("&")}` : path;
 }
 
 function cleanPath(path) {
@@ -319,13 +323,13 @@ export default class GoCommerce {
     }));
   }
 
-  orderHistory(params) {
+  orderHistory(params, { negatedParams }) {
     let path = "/orders";
     if (params && params.user_id) {
       path = `/users/${params.user_id}/orders`;
       delete params.user_id;
     }
-    path = pathWithQuery(path, params);
+    path = pathWithQuery(path, params, negatedParams);
     return this.authHeaders(true).then((headers) => this.api.request(path, {
       headers
     })).then(({items, pagination}) => ({orders: items, pagination}));
@@ -372,6 +376,14 @@ export default class GoCommerce {
     return this.authHeaders().then((headers) => this.api.request(path, {
       headers
     })).then((response) => response.url);
+  }
+
+  deleteUsers(userIds) {
+    const path = "/users" + (userIds.length > 0 ? ("?" + userIds.map(id => `id=${id}`).join("&")) : "");
+    return this.authHeaders(true).then((headers) => this.api.request(path, {
+      method: "DELETE",
+      headers
+    }))
   }
 
   users(params) {
