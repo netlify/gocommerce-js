@@ -274,7 +274,7 @@ export default class GoCommerce {
 
   payment(paymentDetails) {
     const {order_id, amount, provider, stripe_token, paypal_payment_id, paypal_user_id} = paymentDetails;
-    if (order_id && amount && provider && (stripe_token || (paypal_payment_id && paypal_user_id))) {
+    if (order_id && amount != null && provider && (stripe_token || (paypal_payment_id && paypal_user_id))) {
       const cart = this.getCart();
       return this.authHeaders().then((headers) => this.api.request(`/orders/${order_id}/payments`, {
         method: "POST",
