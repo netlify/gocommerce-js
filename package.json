@@ -13,7 +13,7 @@
     "browserify": "mkdir -p browser/ && browserify src/index.js -t [ babelify --presets [ es2015 ] --plugins syntax-object-rest-spread,transform-object-rest-spread ] | uglifyjs > browser/commerce.js",
     "test": "jest src/*.test.js",
     "test:watch": "jest --watch src/*.test.js",
-    "version": "auto-changelog -p --template keepachangelog && git CHANGELOG.md",
+    "version": "auto-changelog -p --template keepachangelog && git add CHANGELOG.md",
     "publish": "git push && git push --tags && gh-release"
   },
   "author": "Mathias Biilmann Christensen",
