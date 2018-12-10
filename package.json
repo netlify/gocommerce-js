@@ -1,23 +1,14 @@
 {
   "name": "gocommerce-js",
-  "version": "4.3.0",
   "description": "GoCommerce API client for JavaScript",
-  "main": "lib/index.js",
-  "files": [
-    "lib/",
-    "README.md"
-  ],
-  "scripts": {
-    "compile": "babel --presets es2015 --plugins syntax-object-rest-spread,transform-object-rest-spread -d lib/ src/",
-    "prepublish": "npm run compile && npm run browserify",
-    "browserify": "mkdir -p browser/ && browserify src/index.js -t [ babelify --presets [ es2015 ] --plugins syntax-object-rest-spread,transform-object-rest-spread ] | uglifyjs > browser/commerce.js",
-    "test": "jest src/*.test.js",
-    "test:watch": "jest --watch src/*.test.js",
-    "version": "auto-changelog -p --template keepachangelog && git add CHANGELOG.md",
-    "publish": "git push && git push --tags && gh-release"
-  },
+  "version": "4.3.0",
   "author": "Mathias Biilmann Christensen",
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/netlify/gocommerce-js/issues"
+  },
+  "dependencies": {
+    "micro-api-client": "^2.0.0"
+  },
   "devDependencies": {
     "auto-changelog": "^1.10.2",
     "babel-cli": "^6.8.0",
@@ -32,7 +23,28 @@
     "jest": "^20.0.0",
     "uglify-js": "^2.6.2"
   },
-  "dependencies": {
-    "micro-api-client": "^2.0.0"
+  "files": [
+    "lib/",
+    "README.md"
+  ],
+  "homepage": "https://github.com/netlify/gocommerce-js",
+  "keywords": [
+    "api",
+    "cli",
+    "commerce",
+    "netlify",
+    "static"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "repository": "netlify/gocommerce-js",
+  "scripts": {
+    "browserify": "mkdir -p browser/ && browserify src/index.js -t [ babelify --presets [ es2015 ] --plugins syntax-object-rest-spread,transform-object-rest-spread ] | uglifyjs > browser/commerce.js",
+    "compile": "babel --presets es2015 --plugins syntax-object-rest-spread,transform-object-rest-spread -d lib/ src/",
+    "prepublish": "npm run compile && npm run browserify",
+    "publish": "git push && git push --tags && gh-release",
+    "test": "jest src/*.test.js",
+    "test:watch": "jest --watch src/*.test.js",
+    "version": "auto-changelog -p --template keepachangelog && git add CHANGELOG.md"
   }
 }
