@@ -12,11 +12,14 @@
     "prepublish": "npm run compile && npm run browserify",
     "browserify": "mkdir -p browser/ && browserify src/index.js -t [ babelify --presets [ es2015 ] --plugins syntax-object-rest-spread,transform-object-rest-spread ] | uglifyjs > browser/commerce.js",
     "test": "jest src/*.test.js",
-    "test:watch": "jest --watch src/*.test.js"
+    "test:watch": "jest --watch src/*.test.js",
+    "version": "auto-changelog -p --template keepachangelog && git CHANGELOG.md",
+    "publish": "git push && git push --tags && gh-release"
   },
   "author": "Mathias Biilmann Christensen",
   "license": "MIT",
   "devDependencies": {
+    "auto-changelog": "^1.10.2",
     "babel-cli": "^6.8.0",
     "babel-plugin-syntax-object-rest-spread": "^6.8.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
@@ -25,6 +28,7 @@
     "babel-preset-es2015": "^6.6.0",
     "babelify": "^7.3.0",
     "browserify": "^16.2.3",
+    "gh-release": "^3.4.0",
     "jest": "^20.0.0",
     "uglify-js": "^2.6.2"
   },
