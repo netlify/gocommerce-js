@@ -43,7 +43,7 @@ function centsToAmount(cents) {
   return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
-function pathWithQuery(path, params, negatedParams) {
+function pathWithQuery(path, params, { negatedParams }) {
   const query = [];
   if (params) {
     for (const key in params) {
@@ -323,7 +323,7 @@ export default class GoCommerce {
     }));
   }
 
-  orderHistory(params, negatedParams) {
+  orderHistory(params, { negatedParams }) {
     let path = "/orders";
     if (params && params.user_id) {
       path = `/users/${params.user_id}/orders`;
@@ -377,7 +377,7 @@ export default class GoCommerce {
       headers
     })).then((response) => response.url);
   }
-  
+
   deleteUsers(userIds) {
     const path = "/users" + (userIds.length > 0 ? ("?" + userIds.map(id => `id=${id}`).join("&")) : "");
     return this.authHeaders(true).then((headers) => this.api.request(path, {
