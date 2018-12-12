@@ -1,8 +1,20 @@
 import {calculatePrices} from './calculator';
 
+const defaultCoupon = {percentage: 10, product_types: ["test"]};
+const validateDefaultCouponOnly = (item) => {
+  expect(item.couponDiscount).toBe(item.discount);
+  expect(item.memberDiscount).toBe(0);
+  expect(item.discountItems).toHaveLength(1);
+  const [ firstDiscount ] = item.discountItems;
+  expect(firstDiscount.type).toBe("coupon");
+  expect(firstDiscount.percentage).toBe(10);
+  expect(firstDiscount.fixed).toBe(0);
+}
+
 test('no items', () => {
   const price = calculatePrices(null, null, "USA", "USD", null, []);
   expect(price.total).toBe(0);
+  expect(price.items).toHaveLength(0);
 });
 
 test('no taxes', () => {
@@ -12,6 +24,12 @@ test('no taxes', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(100);
   expect(price.total).toBe(100);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(100);
+  expect(firstItem.taxes).toBe(0);
 });
 
 test('fixed vat', () => {
@@ -21,6 +39,12 @@ test('fixed vat', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(100);
   expect(price.total).toBe(109);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(109);
+  expect(firstItem.taxes).toBe(9);
 })
 
 test('fixed vat when prices include taxes', () => {
@@ -30,16 +54,27 @@ test('fixed vat when prices include taxes', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(92);
   expect(price.total).toBe(100);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(100);
+  expect(firstItem.taxes).toBe(8);
 });
 
 test('fixed vat when prices include taxes', () => {
-
   const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", null, [{price: {amount: "499", currency: "USD", cents: 49900}, vat: "20", type: "Ticket"}]);
   expect(price.subtotal).toBe(41583);
   expect(price.taxes).toBe(8317);
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(41583);
   expect(price.total).toBe(49900);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(49900);
+  expect(firstItem.taxes).toBe(8317);
 });
 
 test('fixed vat when prices include taxes for a real example', () => {
@@ -52,6 +87,14 @@ test('fixed vat when prices include taxes for a real example', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(2710);
   expect(price.total).toBe(2900);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(2900);
+  expect(firstItem.taxes).toBe(190);
+  expect(firstItem.discount).toBe(0);
+  expect(firstItem.discountItems).toHaveLength(0);
 });
 
 test('country based VAT', () => {
@@ -62,6 +105,12 @@ test('country based VAT', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(100);
   expect(price.total).toBe(121);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(121);
+  expect(firstItem.taxes).toBe(21);
 });
 
 test('country based VAT when prices include taxes', () => {
@@ -72,33 +121,60 @@ test('country based VAT when prices include taxes', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(83);
   expect(price.total).toBe(100);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(100);
+  expect(firstItem.taxes).toBe(17);
 });
 
 test('coupon with no taxes', () => {
-  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(10);
   expect(price.netTotal).toBe(90);
   expect(price.total).toBe(90);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(90);
+  expect(firstItem.discount).toBe(10);
+  validateDefaultCouponOnly(firstItem);
 });
 
 test('coupon with vat', () => {
-  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 10, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, vat: 10, type: "test"}]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(9);
   expect(price.discount).toBe(10);
   expect(price.netTotal).toBe(90);
   expect(price.total).toBe(99);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(99);
+  expect(firstItem.discount).toBe(10);
+  validateDefaultCouponOnly(firstItem);
 });
 
 test('coupon with vat when prices include taxes', () => {
-  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, vat: 9, type: "test"}]);
+  const price = calculatePrices({prices_include_taxes: true}, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(92);
   expect(price.taxes).toBe(7);
   expect(price.discount).toBe(10);
   expect(price.netTotal).toBe(83);
   expect(price.total).toBe(90);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(90);
+  expect(firstItem.discount).toBe(10);
+  validateDefaultCouponOnly(firstItem);
 });
 
 test('pricing items', () => {
@@ -122,15 +198,31 @@ test('pricing items', () => {
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(100);
   expect(price.total).toBe(110);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(110);
+  expect(firstItem.taxes).toBe(10);
+  expect(firstItem.discount).toBe(0);
+  expect(firstItem.discountItems).toHaveLength(0);
 });
 
 test('quantity', () => {
-  const price = calculatePrices(null, null, "USA", "USD", {percentage: 10, product_types: ["test"]}, [{price: {cents: 100}, quantity: 2, vat: 9, type: "test"}]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{price: {cents: 100}, quantity: 2, vat: 9, type: "test"}]);
   expect(price.subtotal).toBe(200);
   expect(price.taxes).toBe(16);
   expect(price.discount).toBe(20);
   expect(price.netTotal).toBe(180);
   expect(price.total).toBe(196);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(98);
+  expect(firstItem.quantity).toBe(2);
+  expect(firstItem.discount).toBe(10);
+  validateDefaultCouponOnly(firstItem);
 });
 
 test('member discounts', () => {
@@ -153,6 +245,19 @@ test('member discounts', () => {
   expect(price.discount).toBe(10);
   expect(price.netTotal).toBe(90);
   expect(price.total).toBe(90);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(90);
+  expect(firstItem.discount).toBe(10);
+  expect(firstItem.couponDiscount).toBe(0);
+  expect(firstItem.memberDiscount).toBe(10);
+  expect(firstItem.discountItems).toHaveLength(1);
+  const [ firstDiscount ] = firstItem.discountItems;
+  expect(firstDiscount.type).toBe("member");
+  expect(firstDiscount.percentage).toBe(10);
+  expect(firstDiscount.fixed).toBe(0);
 });
 
 test('fixed member discounts', () => {
@@ -176,6 +281,19 @@ test('fixed member discounts', () => {
   expect(price.discount).toBe(1500);
   expect(price.netTotal).toBe(990);
   expect(price.total).toBe(990);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstItem ] = price.items;
+  expect(firstItem.total).toBe(990);
+  expect(firstItem.discount).toBe(1500);
+  expect(firstItem.couponDiscount).toBe(0);
+  expect(firstItem.memberDiscount).toBe(1500);
+  expect(firstItem.discountItems).toHaveLength(1);
+  const [ firstDiscount ] = firstItem.discountItems;
+  expect(firstDiscount.type).toBe("member");
+  expect(firstDiscount.percentage).toBe(0);
+  expect(firstDiscount.fixed).toBe(1500);
 });
 
 test('fixed member discounts', () => {
@@ -235,7 +353,15 @@ test('real world tax calculation', () => {
   expect(price.taxes).toBe(625);
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(5766);
-  expect(price.total).toBe(6391);
+  expect(price.total).toBe(6391); // todo: figure out how to fix this / should be 6390
+
+  // items
+  expect(price.items).toHaveLength(2);
+  const [ firstPrice, secondPrice ] = price.items;
+  expect(firstPrice.total).toBe(2900);
+  expect(firstPrice.taxes).toBe(284);
+  expect(secondPrice.total).toBe(3491); // todo: figure out how to fix this / should be 3490
+  expect(secondPrice.taxes).toBe(341);
 });
 
 test('real world relative discount with taxes', () => {
@@ -269,6 +395,19 @@ test('real world relative discount with taxes', () => {
   expect(price.discount).toBe(975);
   expect(price.netTotal).toBe(2663);
   expect(price.total).toBe(2925);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstPrice ] = price.items;
+  expect(firstPrice.total).toBe(2925);
+  expect(firstPrice.discount).toBe(975);
+  expect(firstPrice.couponDiscount).toBe(975);
+  expect(firstPrice.memberDiscount).toBe(0);
+  expect(firstPrice.discountItems).toHaveLength(1);
+  const [ firstDiscount ] = firstPrice.discountItems;
+  expect(firstDiscount.type).toBe("coupon");
+  expect(firstDiscount.percentage).toBe(25);
+  expect(firstDiscount.fixed).toBe(0);
 });
 
 test('real world fixed member discount with taxes', () => {
@@ -311,4 +450,17 @@ test('real world fixed member discount with taxes', () => {
   expect(price.discount).toBe(1000);
   expect(price.netTotal).toBe(2640);
   expect(price.total).toBe(2900);
+
+  // items
+  expect(price.items).toHaveLength(1);
+  const [ firstPrice ] = price.items;
+  expect(firstPrice.total).toBe(2900);
+  expect(firstPrice.discount).toBe(1000);
+  expect(firstPrice.couponDiscount).toBe(0);
+  expect(firstPrice.memberDiscount).toBe(1000);
+  expect(firstPrice.discountItems).toHaveLength(1);
+  const [ firstDiscount ] = firstPrice.discountItems;
+  expect(firstDiscount.type).toBe("member");
+  expect(firstDiscount.percentage).toBe(0);
+  expect(firstDiscount.fixed).toBe(1000);
 });

@@ -187,6 +187,17 @@ export default class GoCommerce {
     cart.taxes = priceObject(price.taxes, this.currency);
     cart.total = priceObject(price.total, this.currency);
 
+    price.items.forEach((priceItem, key) => {
+      const item = items[key];
+      if (!item) {
+        return;
+      }
+      cart.items[item.sku] = {
+        ...item,
+        calculation: priceItem,
+      }
+    });
+
     return cart;
   }
 
