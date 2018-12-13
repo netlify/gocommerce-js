@@ -43,7 +43,9 @@ function centsToAmount(cents) {
   return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
-function pathWithQuery(path, params, { negatedParams }) {
+
+function pathWithQuery(path, params, options) {
+  const negatedParams = options ? options.negatedParams : null;
   const query = [];
   if (params) {
     for (const key in params) {
@@ -334,7 +336,8 @@ export default class GoCommerce {
     }));
   }
 
-  orderHistory(params, { negatedParams }) {
+  orderHistory(params, options) {
+    const negatedParams = options ? options.negatedParams : null;
     let path = "/orders";
     if (params && params.user_id) {
       path = `/users/${params.user_id}/orders`;
