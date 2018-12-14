@@ -44,8 +44,7 @@ function centsToAmount(cents) {
 }
 
 
-function pathWithQuery(path, params, options) {
-  const negatedParams = options ? options.negatedParams : null;
+function pathWithQuery(path, params, { negatedParams } = {}) {
   const query = [];
   if (params) {
     for (const key in params) {
@@ -336,8 +335,7 @@ export default class GoCommerce {
     }));
   }
 
-  orderHistory(params, options) {
-    const negatedParams = options ? options.negatedParams : null;
+  orderHistory(params, { negatedParams } = {}) {
     let path = "/orders";
     if (params && params.user_id) {
       path = `/users/${params.user_id}/orders`;
