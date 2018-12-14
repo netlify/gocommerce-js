@@ -1,7 +1,7 @@
 {
   "name": "gocommerce-js",
   "description": "GoCommerce API client for JavaScript",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "author": "Mathias Biilmann Christensen",
   "bugs": {
     "url": "https://github.com/netlify/gocommerce-js/issues"
