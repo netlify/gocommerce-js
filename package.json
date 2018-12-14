@@ -21,6 +21,7 @@
     "browserify": "^16.2.3",
     "gh-release": "^3.4.0",
     "jest": "^20.0.0",
+    "npm-run-all": "^4.1.5",
     "uglify-js": "^2.6.2"
   },
   "files": [
@@ -41,7 +42,8 @@
   "scripts": {
     "browserify": "mkdir -p browser/ && browserify src/index.js -t [ babelify --presets [ es2015 ] --plugins syntax-object-rest-spread,transform-object-rest-spread ] | uglifyjs > browser/commerce.js",
     "compile": "babel --presets es2015 --plugins syntax-object-rest-spread,transform-object-rest-spread -d lib/ src/",
-    "prepublish": "npm run compile && npm run browserify",
+    "prepare": "run-s compile browserify",
+    "prepublishOnly": "git checkout master && git push && git push --tags && gh-release",
     "publish": "git push && git push --tags && gh-release",
     "test": "jest src/*.test.js",
     "test:watch": "jest --watch src/*.test.js",
