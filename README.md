@@ -2,8 +2,7 @@
 
 This is a JS client library for [GoCommerce](https://github.com/netlify/gocommerce) API.
 
-It lets you signup and authenticate users and is a building block for constructing
-the UI for signups, password recovery, login and logout.
+It handles orders and payments. Integrates with Stripe for payments and will support international pricing and VAT verification.
 
 ## Usage
 
@@ -50,7 +49,7 @@ commerce.order({
   shipping_address: {
     name: "Matt Biilmann",
     company: "netlify", // Optional
-    address: "610 22nd Street",
+    address1: "610 22nd Street",
     city: "San Francisco",
     state: "CA",
     country: "USA",
@@ -60,6 +59,7 @@ commerce.order({
 }).then(({cart, order}) => {
   return commerce.payment({
     // Get a token from Stripes button or a custom integration
+    "provider": "stripe",
     "stripe_token": TOKEN_FROM_STRIPE_CC_FORM,
     // The commerce API will verify that the amount and order ID match
     "amount": cart.total.cents,

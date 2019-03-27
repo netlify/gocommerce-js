@@ -43,15 +43,24 @@ function centsToAmount(cents) {
   return `${(Math.round(cents) / 100).toFixed(2)}`;
 }
 
-function pathWithQuery(path, params) {
+
+function pathWithQuery(path, params, { negatedParams } = {}) {
+  const query = [];
   if (params) {
-    const query = [];
     for (const key in params) {
       query.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
     }
-    return `${path}?${query.join("&")}`;
   }
-  return path;
+  if (negatedParams) {
+    for (const key in negatedParams) {
+      query.push(`${encodeURIComponent(key)}!=${encodeURIComponent(negatedParams[key])}`);
+    }
+  }
+  return query.length > 0 ? `${path}?${query.join("&")}` : path;
+}
+
+function cleanPath(path) {
+  return path.replace(/^https?:\/\/[^\/]+/, '');
 }
 
 export default class GoCommerce {
@@ -77,7 +86,8 @@ export default class GoCommerce {
   }
 
   addToCart(item) {
-    const {path, quantity, meta} = item;
+    const {quantity, meta} = item;
+    const path = cleanPath(item.path);
     if (quantity && path) {
       return fetch(path).then((response) => {
         if (!response.ok) { return Promise.reject(`Failed to fetch ${path}`); }
@@ -174,8 +184,20 @@ export default class GoCommerce {
     cart.discount = priceObject(price.discount, this.currency);
     cart.couponDiscount = priceObject(price.couponDiscount, this.currency);
     cart.memberDiscount = priceObject(price.memberDiscount, this.currency);
+    cart.netTotal = priceObject(price.netTotal, this.currency);
     cart.taxes = priceObject(price.taxes, this.currency);
     cart.total = priceObject(price.total, this.currency);
+
+    price.items.forEach((priceItem, key) => {
+      const item = items[key];
+      if (!item) {
+        return;
+      }
+      cart.items[item.sku] = {
+        ...item,
+        calculation: priceItem,
+      }
+    });
 
     return cart;
   }
@@ -264,7 +286,7 @@ export default class GoCommerce {
 
   payment(paymentDetails) {
     const {order_id, amount, provider, stripe_token, paypal_payment_id, paypal_user_id} = paymentDetails;
-    if (order_id && amount !== undefined && provider && (stripe_token || (paypal_payment_id && paypal_user_id))) {
+    if (order_id && amount != null && provider && (stripe_token || (paypal_payment_id && paypal_user_id))) {
       const cart = this.getCart();
       return this.authHeaders().then((headers) => this.api.request(`/orders/${order_id}/payments`, {
         method: "POST",
@@ -313,13 +335,13 @@ export default class GoCommerce {
     }));
   }
 
-  orderHistory(params) {
+  orderHistory(params, { negatedParams } = {}) {
     let path = "/orders";
     if (params && params.user_id) {
       path = `/users/${params.user_id}/orders`;
       delete params.user_id;
     }
-    path = pathWithQuery(path, params);
+    path = pathWithQuery(path, params, { negatedParams });
     return this.authHeaders(true).then((headers) => this.api.request(path, {
       headers
     })).then(({items, pagination}) => ({orders: items, pagination}));
@@ -366,6 +388,14 @@ export default class GoCommerce {
     return this.authHeaders().then((headers) => this.api.request(path, {
       headers
     })).then((response) => response.url);
+  }
+
+  deleteUsers(userIds) {
+    const path = "/users" + (userIds.length > 0 ? ("?" + userIds.map(id => `id=${id}`).join("&")) : "");
+    return this.authHeaders(true).then((headers) => this.api.request(path, {
+      method: "DELETE",
+      headers
+    }))
   }
 
   users(params) {
