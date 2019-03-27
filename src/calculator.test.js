@@ -563,406 +563,156 @@ test("tax rounding test for mixed tax types", () => {
     prices_include_taxes: true,
     taxes: [
       {
-        percentage: 20,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Austria',
-          'Bulgaria',
-          'Estonia',
-          'Gibraltar',
-          'Slovakia',
-          'United Kingdom'
-        ]
-      },
-      {
         percentage: 21,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
+        product_types: ["E-Book", "Webinar", "Bundle", "Job Post"],
         countries: [
-          'Belgium',
-          'Latvia',
-          'Lithuania',
-          'Netherlands',
-          'Czech Republic',
-          'Czech',
-          'Spain'
-        ]
-      },
-      {
-        percentage: 25,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Croatia',
-          'Denmark',
-          'Sweden'
-        ]
-      },
-      {
-        percentage: 18,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Malta'
-        ]
-      },
-      {
-        percentage: 24,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Greece',
-          'Finland'
-        ]
-      },
-      {
-        percentage: 19,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Germany',
-          'Romania',
-          'Cyprus'
-        ]
-      },
-      {
-        percentage: 23,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Ireland',
-          'Poland',
-          'Portugal'
-        ]
-      },
-      {
-        percentage: 27,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Hungary'
-        ]
-      },
-      {
-        percentage: 22,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Italy',
-          'Slovenia'
-        ]
-      },
-      {
-        percentage: 5,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'France'
-        ]
-      },
-      {
-        percentage: 3,
-        product_types: [
-          'E-Book',
-          'Webinar',
-          'Bundle',
-          'Job Post'
-        ],
-        countries: [
-          'Luxembourg'
+          "Belgium",
+          "Latvia",
+          "Lithuania",
+          "Netherlands",
+          "Czech Republic",
+          "Czech",
+          "Spain"
         ]
       },
       {
         percentage: 7,
-        product_types: [
-          'Book'
-        ],
+        product_types: ["Book"],
         countries: [
-          'Austria',
-          'Belgium',
-          'Bulgaria',
-          'Croatia',
-          'Cyprus',
-          'Czech Republic',
-          'Czech',
-          'Denmark',
-          'Estonia',
-          'Finland',
-          'France',
-          'Germany',
-          'Gibraltar',
-          'Greece',
-          'Hungary',
-          'Ireland',
-          'Italy',
-          'Latvia',
-          'Lithuania',
-          'Luxembourg',
-          'Malta',
-          'Netherlands',
-          'Poland',
-          'Portugal',
-          'Romania',
-          'Slovakia',
-          'Slovenia',
-          'Spain',
-          'Sweden',
-          'United Kingdom'
+          "Austria",
+          "Belgium",
+          "Bulgaria",
+          "Croatia",
+          "Cyprus",
+          "Czech Republic",
+          "Czech",
+          "Denmark",
+          "Estonia",
+          "Finland",
+          "France",
+          "Germany",
+          "Gibraltar",
+          "Greece",
+          "Hungary",
+          "Ireland",
+          "Italy",
+          "Latvia",
+          "Lithuania",
+          "Luxembourg",
+          "Malta",
+          "Netherlands",
+          "Poland",
+          "Portugal",
+          "Romania",
+          "Slovakia",
+          "Slovenia",
+          "Spain",
+          "Sweden",
+          "United Kingdom"
         ]
       }
     ],
     member_discounts: [
       {
         claims: {
-          'app_metadata.subscription.plan': 'supporter'
+          "app_metadata.subscription.plan": "smashing"
         },
         fixed: [
           {
-            amount: '3.00',
-            currency: 'USD'
+            amount: "10.00",
+            currency: "USD"
           },
           {
-            amount: '3.00',
-            currency: 'EUR'
+            amount: "10.00",
+            currency: "EUR"
           }
         ],
-        product_types: [
-          'Book'
-        ]
-      },
-      {
-        claims: {
-          'app_metadata.subscription.plan': 'member'
-        },
-        fixed: [
-          {
-            amount: '5.00',
-            currency: 'USD'
-          },
-          {
-            amount: '5.00',
-            currency: 'EUR'
-          }
-        ],
-        product_types: [
-          'Book'
-        ]
-      },
-      {
-        claims: {
-          'app_metadata.subscription.plan': 'smashing'
-        },
-        fixed: [
-          {
-            amount: '10.00',
-            currency: 'USD'
-          },
-          {
-            amount: '10.00',
-            currency: 'EUR'
-          }
-        ],
-        product_types: [
-          'Book'
-        ]
-      },
-      {
-        claims: {
-          'app_metadata.subscription.plan': 'member'
-        },
-        fixed: [
-          {
-            amount: '25.00',
-            currency: 'USD'
-          },
-          {
-            amount: '25.00',
-            currency: 'EUR'
-          }
-        ],
-        product_types: [
-          'Job Post'
-        ]
-      },
-      {
-        claims: {
-          'app_metadata.subscription.plan': 'smashing'
-        },
-        fixed: [
-          {
-            amount: '75.00',
-            currency: 'USD'
-          },
-          {
-            amount: '75.00',
-            currency: 'EUR'
-          }
-        ],
-        product_types: [
-          'Job Post'
-        ]
-      },
-      {
-        claims: {
-          'app_metadata.subscription.plan': 'member'
-        },
-        fixed: [
-          {
-            amount: '50.00',
-            currency: 'USD'
-          },
-          {
-            amount: '50.00',
-            currency: 'EUR'
-          }
-        ],
-        product_types: [
-          'Ticket'
-        ]
-      },
-      {
-        claims: {
-          'app_metadata.subscription.plan': 'smashing'
-        },
-        fixed: [
-          {
-            amount: '100.00',
-            currency: 'USD'
-          },
-          {
-            amount: '100.00',
-            currency: 'EUR'
-          }
-        ],
-        product_types: [
-          'Ticket'
-        ]
+        product_types: ["Book"]
       }
     ],
-    ts: 1553710078768,
+    ts: 1553710078768
   };
 
   const item = {
-    currency: 'EUR',
-    id: 'art-direction-for-the-web3',
-    sku: 'art-direction-for-the-web',
-    type: 'Book',
+    currency: "EUR",
+    id: "art-direction-for-the-web3",
+    sku: "art-direction-for-the-web",
+    type: "Book",
     price: {
-      amount: '29.00',
-      currency: 'EUR',
+      amount: "29.00",
+      currency: "EUR",
       items: [
         {
-          amount: '19.00',
-          type: 'Book',
-          cents: '1900'
+          amount: "19.00",
+          type: "Book",
+          cents: "1900"
         },
         {
-          amount: '10.00',
-          type: 'E-Book',
-          cents: '1000'
+          amount: "10.00",
+          type: "E-Book",
+          cents: "1000"
         }
       ],
       cents: 2900
     },
-    sales_price: '29.00',
+    sales_price: "29.00",
     prices: [
       {
-        amount: '39.00',
-        currency: 'USD',
+        amount: "39.00",
+        currency: "USD",
         items: [
           {
-            amount: '30.00',
-            type: 'Book'
+            amount: "30.00",
+            type: "Book"
           },
           {
-            amount: '9.00',
-            type: 'E-Book'
+            amount: "9.00",
+            type: "E-Book"
           }
         ]
       },
       {
-        amount: '39.00',
-        currency: 'EUR',
+        amount: "39.00",
+        currency: "EUR",
         items: [
           {
-            amount: '30.00',
-            type: 'Book'
+            amount: "30.00",
+            type: "Book"
           },
           {
-            amount: '9.00',
-            type: 'E-Book'
+            amount: "9.00",
+            type: "E-Book"
           }
         ],
         cents: 3900
       },
       {
-        amount: '29.00',
-        currency: 'USD',
+        amount: "29.00",
+        currency: "USD",
         items: [
           {
-            amount: '19.00',
-            type: 'Book'
+            amount: "19.00",
+            type: "Book"
           },
           {
-            amount: '10.00',
-            type: 'E-Book'
+            amount: "10.00",
+            type: "E-Book"
           }
         ]
       },
       {
-        amount: '29.00',
-        currency: 'EUR',
+        amount: "29.00",
+        currency: "EUR",
         items: [
           {
-            amount: '19.00',
-            type: 'Book',
-            cents: '1900'
+            amount: "19.00",
+            type: "Book",
+            cents: "1900"
           },
           {
-            amount: '10.00',
-            type: 'E-Book',
-            cents: '1000'
+            amount: "10.00",
+            type: "E-Book",
+            cents: "1000"
           }
         ],
         cents: 2900

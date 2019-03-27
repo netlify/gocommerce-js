@@ -1,4 +1,4 @@
-import {checkClaims} from './claims';
+import { checkClaims } from "./claims";
 
 class Price {
   constructor() {
@@ -42,7 +42,8 @@ function couponValidFor(claims, coupon, item) {
 }
 
 function fixedAmount(amounts, currency) {
-  const fixed = amounts && amounts.filter((amount) => amount.currency === currency)[0];
+  const fixed =
+    amounts && amounts.filter(amount => amount.currency === currency)[0];
   return (fixed && Math.round(parseFloat(fixed.amount) * 100)) || 0;
 }
 
@@ -50,21 +51,21 @@ function discountItem(type, percentage = 0, fixed = 0) {
   return {
     type,
     percentage,
-    fixed,
+    fixed
   };
 }
 
 function calculateDiscount(amountToDiscount, percentage = 0, fixed = 0) {
   let discount = 0;
-	if (percentage > 0) {
-		discount = Math.round(amountToDiscount * percentage / 100);
-	}
-	discount += fixed;
+  if (percentage > 0) {
+    discount = Math.round((amountToDiscount * percentage) / 100);
+  }
+  discount += fixed;
 
-	if (discount > amountToDiscount) {
-		return amountToDiscount;
-	}
-	return discount;
+  if (discount > amountToDiscount) {
+    return amountToDiscount;
+  }
+  return discount;
 }
 
 function calculateTaxes(amountToTax, originalPrice, item, settings, country) {
@@ -73,29 +74,34 @@ function calculateTaxes(amountToTax, originalPrice, item, settings, country) {
 
   const taxAmounts = [];
   if (item.vat) {
-    taxAmounts.push({price: amountToTax, percentage: parseInt(item.vat, 10)});
+    taxAmounts.push({ price: amountToTax, percentage: parseInt(item.vat, 10) });
   } else if (settings && item.price.items && item.price.items.length) {
-    item.price.items.forEach((priceItem) => {
+    item.price.items.forEach(priceItem => {
       const realPrice = priceItem.cents * ratio;
       const tax = findTax(settings, country, priceItem.type);
-      taxAmounts.push({price: realPrice, percentage: tax ? tax.percentage : 0});
+      taxAmounts.push({
+        price: Math.round(realPrice),
+        percentage: tax ? tax.percentage : 0
+      });
     });
   } else {
     const tax = findTax(settings, country, item.type);
     if (tax) {
-      taxAmounts.push({price: amountToTax, percentage: tax.percentage});
+      taxAmounts.push({ price: amountToTax, percentage: tax.percentage });
     }
   }
+
+  console.log("Calculating taxes: ", includeTaxes, ratio, taxAmounts);
 
   let taxes = 0;
   let netTotal = 0;
   if (taxAmounts.length) {
-    taxAmounts.forEach((tax) => {
+    taxAmounts.forEach(tax => {
       if (includeTaxes) {
-        tax.price = Math.round(tax.price / (100 + tax.percentage) * 100);
+        tax.price = Math.round((tax.price / (100 + tax.percentage)) * 100);
       }
       netTotal += tax.price;
-      taxes += Math.round(tax.price * tax.percentage / 100);
+      taxes += Math.round((tax.price * tax.percentage) / 100);
     });
   } else {
     netTotal = amountToTax;
@@ -103,60 +109,104 @@ function calculateTaxes(amountToTax, originalPrice, item, settings, country) {
 
   return {
     taxes,
-    netTotal,
+    netTotal
   };
 }
 
-
-export function calculatePrices(settings, claims, country, currency, coupon, items) {
+export function calculatePrices(
+  settings,
+  claims,
+  country,
+  currency,
+  coupon,
+  items
+) {
+  console.log("Calculating price for item");
   const price = new Price();
   price.items = [];
-  items && items.forEach((item) => {
-    const itemPrice = new Price();
-    itemPrice.quantity = item.quantity || 1;
+  items &&
+    items.forEach(item => {
+      const itemPrice = new Price();
+      itemPrice.quantity = item.quantity || 1;
 
-    const originalPrice = item.price.cents + (item.addonPrice ? item.addonPrice.cents : 0);
-    const { netTotal: subtotal } = calculateTaxes(originalPrice, originalPrice, item, settings, country);
-    itemPrice.subtotal = subtotal;
-
-    if (coupon && couponValidFor(claims, coupon, item)) {
-      itemPrice.discount = calculateDiscount(
-        originalPrice, coupon.percentage, fixedAmount(coupon.fixed, currency)
+      const originalPrice =
+        item.price.cents + (item.addonPrice ? item.addonPrice.cents : 0);
+      const { netTotal: subtotal } = calculateTaxes(
+        originalPrice,
+        originalPrice,
+        item,
+        settings,
+        country
       );
-      itemPrice.couponDiscount = itemPrice.discount;
-      itemPrice.discountItems.push(discountItem("coupon", coupon.percentage, fixedAmount(coupon.fixed, currency)))
-    }
-    if (settings && settings.member_discounts) {
-      settings.member_discounts.forEach((discount) => {
-        if (couponValidFor(claims, discount, item)) {
-          const memberDiscount = calculateDiscount(
-            originalPrice, discount.percentage, fixedAmount(discount.fixed, currency)
-          );
-          itemPrice.discount = itemPrice.discount || 0;
-          itemPrice.discount += memberDiscount;
-          itemPrice.memberDiscount = itemPrice.memberDiscount || 0;
-          itemPrice.memberDiscount += memberDiscount;
-          itemPrice.discountItems.push(discountItem("member", discount.percentage, fixedAmount(discount.fixed, currency)))
-        }
-      });
-    }
+      itemPrice.subtotal = subtotal;
 
-    const discountedPrice = Math.max(0, originalPrice - itemPrice.discount);
+      if (coupon && couponValidFor(claims, coupon, item)) {
+        itemPrice.discount = calculateDiscount(
+          originalPrice,
+          coupon.percentage,
+          fixedAmount(coupon.fixed, currency)
+        );
+        itemPrice.couponDiscount = itemPrice.discount;
+        itemPrice.discountItems.push(
+          discountItem(
+            "coupon",
+            coupon.percentage,
+            fixedAmount(coupon.fixed, currency)
+          )
+        );
+      }
+      if (settings && settings.member_discounts) {
+        console.log("Adding member discounts");
+        settings.member_discounts.forEach(discount => {
+          if (couponValidFor(claims, discount, item)) {
+            const memberDiscount = calculateDiscount(
+              originalPrice,
+              discount.percentage,
+              fixedAmount(discount.fixed, currency)
+            );
+            console.log("Calculated discounts to be: ", memberDiscount);
+            console.log("itemPrice before: ", itemPrice);
+            itemPrice.discount = itemPrice.discount || 0;
+            itemPrice.discount += memberDiscount;
+            itemPrice.memberDiscount = itemPrice.memberDiscount || 0;
+            itemPrice.memberDiscount += memberDiscount;
+            itemPrice.discountItems.push(
+              discountItem(
+                "member",
+                discount.percentage,
+                fixedAmount(discount.fixed, currency)
+              )
+            );
+            console.log("itemPrice after: ", itemPrice);
+          }
+        });
+      }
 
-    const { taxes, netTotal } = calculateTaxes(discountedPrice, originalPrice, item, settings, country);
-    itemPrice.taxes = taxes;
-    itemPrice.netTotal = netTotal;
-    itemPrice.total = itemPrice.netTotal + itemPrice.taxes;
-    price.items.push(itemPrice);
+      const discountedPrice = Math.max(0, originalPrice - itemPrice.discount);
+      console.log("Discounted price before taxes: ", discountedPrice);
 
-    price.subtotal += (itemPrice.subtotal * itemPrice.quantity);
-    price.discount += (itemPrice.discount * itemPrice.quantity);
-    price.couponDiscount += (itemPrice.couponDiscount * itemPrice.quantity);
-    price.memberDiscount += (itemPrice.memberDiscount * itemPrice.quantity);
-    price.netTotal += (itemPrice.netTotal * itemPrice.quantity);
-    price.taxes    += (itemPrice.taxes    * itemPrice.quantity);
-    price.total    += (itemPrice.total    * itemPrice.quantity);
-  });
+      const { taxes, netTotal } = calculateTaxes(
+        discountedPrice,
+        originalPrice,
+        item,
+        settings,
+        country
+      );
+      console.log("Calculated taxes: ", taxes, netTotal);
+      itemPrice.taxes = taxes;
+      itemPrice.netTotal = netTotal;
+      itemPrice.total = itemPrice.netTotal + itemPrice.taxes;
+      console.log("Final item price: ", itemPrice);
+      price.items.push(itemPrice);
+
+      price.subtotal += itemPrice.subtotal * itemPrice.quantity;
+      price.discount += itemPrice.discount * itemPrice.quantity;
+      price.couponDiscount += itemPrice.couponDiscount * itemPrice.quantity;
+      price.memberDiscount += itemPrice.memberDiscount * itemPrice.quantity;
+      price.netTotal += itemPrice.netTotal * itemPrice.quantity;
+      price.taxes += itemPrice.taxes * itemPrice.quantity;
+      price.total += itemPrice.total * itemPrice.quantity;
+    });
 
   return price;
 }
