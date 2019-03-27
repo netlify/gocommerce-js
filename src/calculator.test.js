@@ -967,6 +967,7 @@ test("tax rounding test for mixed tax types", () => {
         ],
         cents: 2900
       }
+    ],
     newPrice: 2900
   };
 
