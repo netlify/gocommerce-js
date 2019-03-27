@@ -91,8 +91,6 @@ function calculateTaxes(amountToTax, originalPrice, item, settings, country) {
     }
   }
 
-  console.log("Calculating taxes: ", includeTaxes, ratio, taxAmounts);
-
   let taxes = 0;
   let netTotal = 0;
   if (taxAmounts.length) {
@@ -121,7 +119,6 @@ export function calculatePrices(
   coupon,
   items
 ) {
-  console.log("Calculating price for item");
   const price = new Price();
   price.items = [];
   items &&
@@ -156,7 +153,6 @@ export function calculatePrices(
         );
       }
       if (settings && settings.member_discounts) {
-        console.log("Adding member discounts");
         settings.member_discounts.forEach(discount => {
           if (couponValidFor(claims, discount, item)) {
             const memberDiscount = calculateDiscount(
@@ -164,8 +160,6 @@ export function calculatePrices(
               discount.percentage,
               fixedAmount(discount.fixed, currency)
             );
-            console.log("Calculated discounts to be: ", memberDiscount);
-            console.log("itemPrice before: ", itemPrice);
             itemPrice.discount = itemPrice.discount || 0;
             itemPrice.discount += memberDiscount;
             itemPrice.memberDiscount = itemPrice.memberDiscount || 0;
@@ -177,13 +171,11 @@ export function calculatePrices(
                 fixedAmount(discount.fixed, currency)
               )
             );
-            console.log("itemPrice after: ", itemPrice);
           }
         });
       }
 
       const discountedPrice = Math.max(0, originalPrice - itemPrice.discount);
-      console.log("Discounted price before taxes: ", discountedPrice);
 
       const { taxes, netTotal } = calculateTaxes(
         discountedPrice,
@@ -192,11 +184,9 @@ export function calculatePrices(
         settings,
         country
       );
-      console.log("Calculated taxes: ", taxes, netTotal);
       itemPrice.taxes = taxes;
       itemPrice.netTotal = netTotal;
       itemPrice.total = itemPrice.netTotal + itemPrice.taxes;
-      console.log("Final item price: ", itemPrice);
       price.items.push(itemPrice);
 
       price.subtotal += itemPrice.subtotal * itemPrice.quantity;
