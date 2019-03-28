@@ -721,7 +721,7 @@ test("tax rounding test for mixed tax types", () => {
     newPrice: 2900
   };
 
-  const price = calculatePrices(
+  let price = calculatePrices(
     settings,
     { app_metadata: { subscription: { plan: "smashing" } } },
     "Netherlands",
@@ -731,4 +731,17 @@ test("tax rounding test for mixed tax types", () => {
   );
 
   expect(price.total).toBe(1900);
+
+  // without membership
+  price = calculatePrices(
+    settings,
+    null,
+    "Netherlands",
+    "EUR",
+    null,
+    [item]
+  );
+
+  expect(price.total).toBe(2900);
+
 });
