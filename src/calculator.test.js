@@ -431,18 +431,18 @@ test("real world tax calculation", () => {
     secondItem
   ]);
   expect(price.subtotal).toBe(5766);
-  expect(price.taxes).toBe(625);
+  expect(price.taxes).toBe(624);
   expect(price.discount).toBe(0);
   expect(price.netTotal).toBe(5766);
-  expect(price.total).toBe(6391); // todo: figure out how to fix this / should be 6390
+  expect(price.total).toBe(6390);
 
   // items
   expect(price.items).toHaveLength(2);
   const [firstPrice, secondPrice] = price.items;
   expect(firstPrice.total).toBe(2900);
   expect(firstPrice.taxes).toBe(284);
-  expect(secondPrice.total).toBe(3491); // todo: figure out how to fix this / should be 3490
-  expect(secondPrice.taxes).toBe(341);
+  expect(secondPrice.total).toBe(3490);
+  expect(secondPrice.taxes).toBe(340);
 });
 
 test("real world relative discount with taxes", () => {
@@ -558,7 +558,7 @@ test("real world fixed member discount with taxes", () => {
   expect(firstDiscount.fixed).toBe(1000);
 });
 
-test("tax rounding test for mixed tax types", () => {
+describe("tax rounding test for mixed tax types", () => {
   const settings = {
     prices_include_taxes: true,
     taxes: [
@@ -721,14 +721,22 @@ test("tax rounding test for mixed tax types", () => {
     newPrice: 2900
   };
 
-  const price = calculatePrices(
-    settings,
-    { app_metadata: { subscription: { plan: "smashing" } } },
-    "Netherlands",
-    "EUR",
-    null,
-    [item]
-  );
+  test("with member discount", () => {
+    let price = calculatePrices(
+      settings,
+      { app_metadata: { subscription: { plan: "smashing" } } },
+      "Netherlands",
+      "EUR",
+      null,
+      [item]
+    );
+    expect(price.total).toBe(1900);
+  });
 
-  expect(price.total).toBe(1900);
+  test("without discount", () => {
+    const price = calculatePrices(settings, null, "Netherlands", "EUR", null, [
+      item
+    ]);
+    expect(price.total).toBe(2900);
+  });
 });

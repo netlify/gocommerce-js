@@ -96,10 +96,15 @@ function calculateTaxes(amountToTax, originalPrice, item, settings, country) {
   if (taxAmounts.length) {
     taxAmounts.forEach(tax => {
       if (includeTaxes) {
-        tax.price = Math.round((tax.price / (100 + tax.percentage)) * 100);
+        const amount = Math.round(
+          (tax.price / (100 + tax.percentage)) * 100 * (tax.percentage / 100)
+        );
+        tax.price -= amount;
+        taxes += amount;
+      } else {
+        taxes += Math.round((tax.price * tax.percentage) / 100);
       }
       netTotal += tax.price;
-      taxes += Math.round((tax.price * tax.percentage) / 100);
     });
   } else {
     netTotal = amountToTax;
