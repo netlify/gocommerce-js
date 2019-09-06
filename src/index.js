@@ -291,8 +291,21 @@ export default class GoCommerce {
   }
 
   payment(paymentDetails) {
-    const { order_id, amount, provider, stripe_token, paypal_payment_id, paypal_user_id } = paymentDetails;
-    if (order_id && amount != null && provider && (stripe_token || (paypal_payment_id && paypal_user_id))) {
+    const {
+      order_id,
+      amount,
+      provider,
+      stripe_token,
+      stripe_payment_method_id,
+      paypal_payment_id,
+      paypal_user_id,
+    } = paymentDetails;
+    if (
+      order_id &&
+      amount != null &&
+      provider &&
+      (stripe_token || stripe_payment_method_id || (paypal_payment_id && paypal_user_id))
+    ) {
       const cart = this.getCart();
       return this.authHeaders().then(headers =>
         this.api.request(`/orders/${order_id}/payments`, {
@@ -303,6 +316,7 @@ export default class GoCommerce {
             order_id,
             provider,
             stripe_token,
+            stripe_payment_method_id,
             paypal_payment_id,
             paypal_user_id,
             currency: this.currency,
@@ -314,6 +328,15 @@ export default class GoCommerce {
         "Invalid paymentDetails - must have an order_id, an amount, a provider, and a stripe_token or a paypal_payment_id and paypal_user_id"
       );
     }
+  }
+
+  paymentConfirm(paymentId) {
+    return this.authHeaders().then(headers =>
+      this.api.request(`/payments/${paymentId}/confirm`, {
+        method: "POST",
+        headers,
+      })
+    );
   }
 
   resendConfirmation(orderID, email) {
