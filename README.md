@@ -2,6 +2,8 @@
 
 This is a JS client library for [GoCommerce](https://github.com/netlify/gocommerce) API.
 
+**IMPORTANT:** This requires at least version 1.8.0 of the GoCommerce backend (since v5.0.0).
+
 It handles orders and payments. Integrates with Stripe for payments and will support international pricing and VAT verification.
 
 ## Usage
