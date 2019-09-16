@@ -654,7 +654,7 @@ describe("tax rounding test for mixed tax types", () => {
   };
 
   test("with member discount", () => {
-    let price = calculatePrices(
+    const price = calculatePrices(
       settings,
       { app_metadata: { subscription: { plan: "smashing" } } },
       "Netherlands",
