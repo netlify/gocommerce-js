@@ -18,9 +18,7 @@ test("no items", () => {
 });
 
 test("no taxes", () => {
-  const price = calculatePrices(null, null, "USA", "USD", null, [
-    { price: { cents: 100 }, type: "test" }
-  ]);
+  const price = calculatePrices(null, null, "USA", "USD", null, [{ price: { cents: 100 }, type: "test" }]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(0);
@@ -35,9 +33,7 @@ test("no taxes", () => {
 });
 
 test("fixed vat", () => {
-  const price = calculatePrices(null, null, "USA", "USD", null, [
-    { price: { cents: 100 }, vat: 9, type: "test" }
-  ]);
+  const price = calculatePrices(null, null, "USA", "USD", null, [{ price: { cents: 100 }, vat: 9, type: "test" }]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(9);
   expect(price.discount).toBe(0);
@@ -52,14 +48,9 @@ test("fixed vat", () => {
 });
 
 test("fixed vat when prices include taxes", () => {
-  const price = calculatePrices(
-    { prices_include_taxes: true },
-    null,
-    "USA",
-    "USD",
-    null,
-    [{ price: { cents: 100 }, vat: 9, type: "test" }]
-  );
+  const price = calculatePrices({ prices_include_taxes: true }, null, "USA", "USD", null, [
+    { price: { cents: 100 }, vat: 9, type: "test" },
+  ]);
   expect(price.subtotal).toBe(92);
   expect(price.taxes).toBe(8);
   expect(price.discount).toBe(0);
@@ -74,20 +65,13 @@ test("fixed vat when prices include taxes", () => {
 });
 
 test("fixed vat when prices include taxes", () => {
-  const price = calculatePrices(
-    { prices_include_taxes: true },
-    null,
-    "USA",
-    "USD",
-    null,
-    [
-      {
-        price: { amount: "499", currency: "USD", cents: 49900 },
-        vat: "20",
-        type: "Ticket"
-      }
-    ]
-  );
+  const price = calculatePrices({ prices_include_taxes: true }, null, "USA", "USD", null, [
+    {
+      price: { amount: "499", currency: "USD", cents: 49900 },
+      vat: "20",
+      type: "Ticket",
+    },
+  ]);
   expect(price.subtotal).toBe(41583);
   expect(price.taxes).toBe(8317);
   expect(price.discount).toBe(0);
@@ -104,10 +88,8 @@ test("fixed vat when prices include taxes", () => {
 test("fixed vat when prices include taxes for a real example", () => {
   const price = calculatePrices(
     {
-      taxes: [
-        { percentage: 7, product_types: ["book"], countries: ["Netherlands"] }
-      ],
-      prices_include_taxes: true
+      taxes: [{ percentage: 7, product_types: ["book"], countries: ["Netherlands"] }],
+      prices_include_taxes: true,
     },
     null,
     "Netherlands",
@@ -132,11 +114,9 @@ test("fixed vat when prices include taxes for a real example", () => {
 
 test("country based VAT", () => {
   const settings = {
-    taxes: [{ percentage: 21, product_types: ["test"], countries: ["USA"] }]
+    taxes: [{ percentage: 21, product_types: ["test"], countries: ["USA"] }],
   };
-  const price = calculatePrices(settings, null, "USA", "USD", null, [
-    { price: { cents: 100 }, type: "test" }
-  ]);
+  const price = calculatePrices(settings, null, "USA", "USD", null, [{ price: { cents: 100 }, type: "test" }]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(21);
   expect(price.discount).toBe(0);
@@ -153,11 +133,9 @@ test("country based VAT", () => {
 test("country based VAT when prices include taxes", () => {
   const settings = {
     prices_include_taxes: true,
-    taxes: [{ percentage: 21, product_types: ["test"], countries: ["USA"] }]
+    taxes: [{ percentage: 21, product_types: ["test"], countries: ["USA"] }],
   };
-  const price = calculatePrices(settings, null, "USA", "USD", null, [
-    { price: { cents: 100 }, type: "test" }
-  ]);
+  const price = calculatePrices(settings, null, "USA", "USD", null, [{ price: { cents: 100 }, type: "test" }]);
   expect(price.subtotal).toBe(83);
   expect(price.taxes).toBe(17);
   expect(price.discount).toBe(0);
@@ -172,9 +150,7 @@ test("country based VAT when prices include taxes", () => {
 });
 
 test("coupon with no taxes", () => {
-  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [
-    { price: { cents: 100 }, type: "test" }
-  ]);
+  const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [{ price: { cents: 100 }, type: "test" }]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(10);
@@ -191,7 +167,7 @@ test("coupon with no taxes", () => {
 
 test("coupon with vat", () => {
   const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [
-    { price: { cents: 100 }, vat: 10, type: "test" }
+    { price: { cents: 100 }, vat: 10, type: "test" },
   ]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(9);
@@ -208,14 +184,9 @@ test("coupon with vat", () => {
 });
 
 test("coupon with vat when prices include taxes", () => {
-  const price = calculatePrices(
-    { prices_include_taxes: true },
-    null,
-    "USA",
-    "USD",
-    defaultCoupon,
-    [{ price: { cents: 100 }, vat: 9, type: "test" }]
-  );
+  const price = calculatePrices({ prices_include_taxes: true }, null, "USA", "USD", defaultCoupon, [
+    { price: { cents: 100 }, vat: 9, type: "test" },
+  ]);
   expect(price.subtotal).toBe(92);
   expect(price.taxes).toBe(7);
   expect(price.discount).toBe(10);
@@ -236,23 +207,23 @@ test("pricing items", () => {
       {
         percentage: 7,
         product_types: ["book"],
-        countries: ["DE"]
+        countries: ["DE"],
       },
       {
         percentage: 21,
         product_types: ["ebook"],
-        countries: ["DE"]
-      }
-    ]
+        countries: ["DE"],
+      },
+    ],
   };
   const price = calculatePrices(settings, null, "DE", "EUR", null, [
     {
       price: {
         cents: 100,
-        items: [{ cents: 80, type: "book" }, { cents: 20, type: "ebook" }]
+        items: [{ cents: 80, type: "book" }, { cents: 20, type: "ebook" }],
       },
-      type: "book"
-    }
+      type: "book",
+    },
   ]);
   expect(price.subtotal).toBe(100);
   expect(price.taxes).toBe(10);
@@ -271,7 +242,7 @@ test("pricing items", () => {
 
 test("quantity", () => {
   const price = calculatePrices(null, null, "USA", "USD", defaultCoupon, [
-    { price: { cents: 100 }, quantity: 2, vat: 9, type: "test" }
+    { price: { cents: 100 }, quantity: 2, vat: 9, type: "test" },
   ]);
   expect(price.subtotal).toBe(200);
   expect(price.taxes).toBe(16);
@@ -293,9 +264,9 @@ test("member discounts", () => {
     member_discounts: [
       {
         claims: { "app_metadata.subscriptions.members": "supporter" },
-        percentage: 10
-      }
-    ]
+        percentage: 10,
+      },
+    ],
   };
   const price = calculatePrices(
     settings,
@@ -330,22 +301,14 @@ test("fixed member discounts", () => {
     member_discounts: [
       {
         claims: { "app_metadata.subscription.plan": "member" },
-        fixed: [
-          { amount: "15.00", currency: "USD" },
-          { amount: "15.00", currency: "EUR" }
-        ],
-        product_types: ["Book"]
-      }
-    ]
+        fixed: [{ amount: "15.00", currency: "USD" }, { amount: "15.00", currency: "EUR" }],
+        product_types: ["Book"],
+      },
+    ],
   };
-  const price = calculatePrices(
-    settings,
-    { app_metadata: { subscription: { plan: "member" } } },
-    "USA",
-    "USD",
-    null,
-    [{ price: { cents: 2490 }, type: "Book" }]
-  );
+  const price = calculatePrices(settings, { app_metadata: { subscription: { plan: "member" } } }, "USA", "USD", null, [
+    { price: { cents: 2490 }, type: "Book" },
+  ]);
   expect(price.subtotal).toBe(2490);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(1500);
@@ -371,22 +334,14 @@ test("fixed member discounts", () => {
     member_discounts: [
       {
         claims: { "app_metadata.subscription.plan": "member" },
-        fixed: [
-          { amount: "15.00", currency: "USD" },
-          { amount: "15.00", currency: "EUR" }
-        ],
-        products: ["best-book-ever"]
-      }
-    ]
+        fixed: [{ amount: "15.00", currency: "USD" }, { amount: "15.00", currency: "EUR" }],
+        products: ["best-book-ever"],
+      },
+    ],
   };
-  const price = calculatePrices(
-    settings,
-    { app_metadata: { subscription: { plan: "member" } } },
-    "USA",
-    "USD",
-    null,
-    [{ price: { cents: 2490 }, type: "Book", sku: "best-book-ever" }]
-  );
+  const price = calculatePrices(settings, { app_metadata: { subscription: { plan: "member" } } }, "USA", "USD", null, [
+    { price: { cents: 2490 }, type: "Book", sku: "best-book-ever" },
+  ]);
   expect(price.subtotal).toBe(2490);
   expect(price.taxes).toBe(0);
   expect(price.discount).toBe(1500);
@@ -401,35 +356,32 @@ test("real world tax calculation", () => {
       {
         percentage: 7,
         product_types: "book",
-        countries: "USA"
+        countries: "USA",
       },
       {
         percentage: 19,
         product_types: "ebook",
-        countries: "USA"
-      }
-    ]
+        countries: "USA",
+      },
+    ],
   };
 
   const firstItem = {
     price: {
       cents: 2900,
-      items: [{ cents: 1900, type: "book" }, { cents: 1000, type: "ebook" }]
+      items: [{ cents: 1900, type: "book" }, { cents: 1000, type: "ebook" }],
     },
-    type: "book"
+    type: "book",
   };
   const secondItem = {
     price: {
       cents: 3490,
-      items: [{ cents: 2300, type: "book" }, { cents: 1190, type: "ebook" }]
+      items: [{ cents: 2300, type: "book" }, { cents: 1190, type: "ebook" }],
     },
-    type: "book"
+    type: "book",
   };
 
-  const price = calculatePrices(settings, null, "USA", "USD", null, [
-    firstItem,
-    secondItem
-  ]);
+  const price = calculatePrices(settings, null, "USA", "USD", null, [firstItem, secondItem]);
   expect(price.subtotal).toBe(5766);
   expect(price.taxes).toBe(624);
   expect(price.discount).toBe(0);
@@ -452,32 +404,25 @@ test("real world relative discount with taxes", () => {
       {
         percentage: 7,
         product_types: "book",
-        countries: "USA"
+        countries: "USA",
       },
       {
         percentage: 19,
         product_types: "ebook",
-        countries: "USA"
-      }
-    ]
+        countries: "USA",
+      },
+    ],
   };
 
   const firstItem = {
     price: {
       cents: 3900,
-      items: [{ cents: 2900, type: "book" }, { cents: 1000, type: "ebook" }]
+      items: [{ cents: 2900, type: "book" }, { cents: 1000, type: "ebook" }],
     },
-    type: "book"
+    type: "book",
   };
 
-  const price = calculatePrices(
-    settings,
-    null,
-    "USA",
-    "USD",
-    { percentage: 25, product_types: ["book"] },
-    [firstItem]
-  );
+  const price = calculatePrices(settings, null, "USA", "USD", { percentage: 25, product_types: ["book"] }, [firstItem]);
   expect(price.subtotal).toBe(3550);
   expect(price.taxes).toBe(262);
   expect(price.discount).toBe(975);
@@ -505,39 +450,34 @@ test("real world fixed member discount with taxes", () => {
       {
         percentage: 7,
         product_types: "book",
-        countries: "USA"
+        countries: "USA",
       },
       {
         percentage: 19,
         product_types: "ebook",
-        countries: "USA"
-      }
+        countries: "USA",
+      },
     ],
     member_discounts: [
       {
         claims: { "app_metadata.subscription.plan": "member" },
         fixed: [{ amount: "10.00", currency: "USD" }],
-        product_types: ["book"]
-      }
-    ]
+        product_types: ["book"],
+      },
+    ],
   };
 
   const firstItem = {
     price: {
       cents: 3900,
-      items: [{ cents: 2900, type: "book" }, { cents: 1000, type: "ebook" }]
+      items: [{ cents: 2900, type: "book" }, { cents: 1000, type: "ebook" }],
     },
-    type: "book"
+    type: "book",
   };
 
-  const price = calculatePrices(
-    settings,
-    { app_metadata: { subscription: { plan: "member" } } },
-    "USA",
-    "USD",
-    null,
-    [firstItem]
-  );
+  const price = calculatePrices(settings, { app_metadata: { subscription: { plan: "member" } } }, "USA", "USD", null, [
+    firstItem,
+  ]);
   expect(price.subtotal).toBe(3550);
   expect(price.taxes).toBe(260);
   expect(price.discount).toBe(1000);
@@ -565,15 +505,7 @@ describe("tax rounding test for mixed tax types", () => {
       {
         percentage: 21,
         product_types: ["E-Book", "Webinar", "Bundle", "Job Post"],
-        countries: [
-          "Belgium",
-          "Latvia",
-          "Lithuania",
-          "Netherlands",
-          "Czech Republic",
-          "Czech",
-          "Spain"
-        ]
+        countries: ["Belgium", "Latvia", "Lithuania", "Netherlands", "Czech Republic", "Czech", "Spain"],
       },
       {
         percentage: 7,
@@ -608,29 +540,29 @@ describe("tax rounding test for mixed tax types", () => {
           "Slovenia",
           "Spain",
           "Sweden",
-          "United Kingdom"
-        ]
-      }
+          "United Kingdom",
+        ],
+      },
     ],
     member_discounts: [
       {
         claims: {
-          "app_metadata.subscription.plan": "smashing"
+          "app_metadata.subscription.plan": "smashing",
         },
         fixed: [
           {
             amount: "10.00",
-            currency: "USD"
+            currency: "USD",
           },
           {
             amount: "10.00",
-            currency: "EUR"
-          }
+            currency: "EUR",
+          },
         ],
-        product_types: ["Book"]
-      }
+        product_types: ["Book"],
+      },
     ],
-    ts: 1553710078768
+    ts: 1553710078768,
   };
 
   const item = {
@@ -645,15 +577,15 @@ describe("tax rounding test for mixed tax types", () => {
         {
           amount: "19.00",
           type: "Book",
-          cents: "1900"
+          cents: "1900",
         },
         {
           amount: "10.00",
           type: "E-Book",
-          cents: "1000"
-        }
+          cents: "1000",
+        },
       ],
-      cents: 2900
+      cents: 2900,
     },
     sales_price: "29.00",
     prices: [
@@ -663,13 +595,13 @@ describe("tax rounding test for mixed tax types", () => {
         items: [
           {
             amount: "30.00",
-            type: "Book"
+            type: "Book",
           },
           {
             amount: "9.00",
-            type: "E-Book"
-          }
-        ]
+            type: "E-Book",
+          },
+        ],
       },
       {
         amount: "39.00",
@@ -677,14 +609,14 @@ describe("tax rounding test for mixed tax types", () => {
         items: [
           {
             amount: "30.00",
-            type: "Book"
+            type: "Book",
           },
           {
             amount: "9.00",
-            type: "E-Book"
-          }
+            type: "E-Book",
+          },
         ],
-        cents: 3900
+        cents: 3900,
       },
       {
         amount: "29.00",
@@ -692,13 +624,13 @@ describe("tax rounding test for mixed tax types", () => {
         items: [
           {
             amount: "19.00",
-            type: "Book"
+            type: "Book",
           },
           {
             amount: "10.00",
-            type: "E-Book"
-          }
-        ]
+            type: "E-Book",
+          },
+        ],
       },
       {
         amount: "29.00",
@@ -707,18 +639,18 @@ describe("tax rounding test for mixed tax types", () => {
           {
             amount: "19.00",
             type: "Book",
-            cents: "1900"
+            cents: "1900",
           },
           {
             amount: "10.00",
             type: "E-Book",
-            cents: "1000"
-          }
+            cents: "1000",
+          },
         ],
-        cents: 2900
-      }
+        cents: 2900,
+      },
     ],
-    newPrice: 2900
+    newPrice: 2900,
   };
 
   test("with member discount", () => {
@@ -734,9 +666,7 @@ describe("tax rounding test for mixed tax types", () => {
   });
 
   test("without discount", () => {
-    const price = calculatePrices(settings, null, "Netherlands", "EUR", null, [
-      item
-    ]);
+    const price = calculatePrices(settings, null, "Netherlands", "EUR", null, [item]);
     expect(price.total).toBe(2900);
   });
 });
